@@ -1,115 +1,93 @@
 "use client";
-
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ApiError, api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import type { Book, BookSearchResult, Reading } from "@/lib/types";
-import { Button, Cover, Empty, SignInWall, Spinner } from "@/components/ui";
+import { Button, Cover, Empty, Spinner } from "@/components/ui";
+import Icon from "@/components/Icon";
+import BookArt from "@/components/BookArt";
+import ContextRail from "@/components/ContextRail";
 
+const topics = [
+  {title:"소설",description:"이야기 속으로",color:"#edf3e9"},
+  {title:"에세이",description:"다른 사람의 시선",color:"#f7eee7"},
+  {title:"인문",description:"생각의 폭을 넓히는",color:"#ecf1f6"},
+  {title:"과학",description:"세상을 이해하는",color:"#f1eef7"},
+];
+function subscribeHistory(callback: () => void) {
+  window.addEventListener("12books-search-change", callback);
+  return () => window.removeEventListener("12books-search-change", callback);
+}
+function readHistory() {
+  try { return sessionStorage.getItem("12books-searches") ?? "[]"; } catch { return "[]"; }
+}
 export default function SearchPage() {
   const router = useRouter();
-  const { me, loading } = useSession();
+  const { me } = useSession();
   const [query, setQuery] = useState("");
+  const [searched, setSearched] = useState("");
   const [results, setResults] = useState<BookSearchResult[] | null>(null);
+  const history = useSyncExternalStore(subscribeHistory, readHistory, () => "[]");
+  const recent = useMemo(() => {
+    try { const saved: unknown = JSON.parse(history); return Array.isArray(saved) ? saved.filter((q): q is string => typeof q === "string").slice(0, 5) : []; } catch { return []; }
+  }, [history]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsLogin, setNeedsLogin] = useState(false);
   const [shelving, setShelving] = useState<string | null>(null);
-
-  async function search(e: React.FormEvent) {
-    e.preventDefault();
-    if (!query.trim()) return;
-    setBusy(true);
-    setError(null);
-    try {
-      setResults(
-        await api<BookSearchResult[]>(`/api/v1/books/search?q=${encodeURIComponent(query.trim())}`),
-      );
-    } catch (e) {
-      // 카카오가 죽으면 502가 온다. 사용자가 고칠 수 있는 일이 아니므로 그대로 말해준다.
-      setError(
-        e instanceof ApiError && e.code === "E001"
-          ? "책 검색 서비스를 지금 이용할 수 없습니다. 잠시 뒤 다시 시도해 주세요."
-          : "검색하지 못했습니다.",
-      );
-    } finally {
-      setBusy(false);
-    }
+  const requestId = useRef(0);
+  const input = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    return () => { requestId.current += 1; };
+  }, []);
+  function remember(values: string[]) {
+    try { sessionStorage.setItem("12books-searches", JSON.stringify(values)); window.dispatchEvent(new Event("12books-search-change")); } catch { /* Optional history. */ }
   }
-
-  /**
-   * 담기는 두 걸음이다 — 책을 내부에 확정하고(POST /books), 그 id로 서재에 넣는다.
-   * 검색 결과를 그대로 되돌려보내야 하므로 signature까지 통째로 보낸다.
-   */
-  async function shelve(item: BookSearchResult) {
-    const key = item.isbn13 ?? item.title;
-    setShelving(key);
+  async function search(term: string) {
+    const q = term.trim();
+    if (!q) { input.current?.focus(); return; }
+    setQuery(q);
     setError(null);
+    if (!me) { setNeedsLogin(true); return; }
+    setNeedsLogin(false);
+    const id = ++requestId.current;
+    setBusy(true);
+    setSearched(q);
+    setResults(null);
+    try {
+      const found = await api<BookSearchResult[]>(`/api/v1/books/search?q=${encodeURIComponent(q)}`);
+      if (id !== requestId.current) return;
+      setResults(found);
+      remember([q, ...recent.filter(value => value !== q)].slice(0, 5));
+    } catch (e) {
+      if (id !== requestId.current) return;
+      setError(e instanceof ApiError && e.status === 401 ? "로그인 상태를 확인해 주세요." : "책을 검색하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally { if (id === requestId.current) setBusy(false); }
+  }
+  async function shelve(item: BookSearchResult) {
+    const key = item.isbn13 ?? `${item.title}-${item.authors}`;
+    setShelving(key); setError(null);
     try {
       const book = await api<Book>("/api/v1/books", { method: "POST", body: item });
-      await api<Reading>("/api/v1/readings", {
-        method: "POST",
-        body: { bookId: book.id, status: "WANT_TO_READ" },
-      });
+      await api<Reading>("/api/v1/readings", { method: "POST", body: { bookId: book.id, status: "WANT_TO_READ" } });
       router.push("/library");
-    } catch (e) {
-      setError(
-        e instanceof ApiError && e.code === "R002"
-          ? "이미 서재에 있는 책입니다."
-          : "서재에 담지 못했습니다.",
-      );
-    } finally {
-      setShelving(null);
-    }
+    } catch (e) { setError(e instanceof ApiError && e.code === "R002" ? "이미 서재에 담긴 책입니다." : "책을 담지 못했습니다. 다시 시도해 주세요."); }
+    finally { setShelving(null); }
   }
-
-  if (loading) return null;
-  if (!me) return <SignInWall />;
-
-  return (
-    <div>
-      <form onSubmit={search} className="mb-6 flex gap-2">
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="제목, 저자로 검색"
-          className="w-full rounded-lg border border-line bg-transparent px-4 py-2 text-sm outline-none focus:border-ink/40"
-        />
-        <Button type="submit" disabled={busy}>
-          검색
-        </Button>
-      </form>
-
-      {error ? <p className="mb-4 text-sm text-danger">{error}</p> : null}
-      {busy ? <Spinner /> : null}
-
-      {results && results.length === 0 && !busy ? (
-        <Empty title="결과가 없습니다" hint="다른 검색어로 찾아보세요." />
-      ) : null}
-
-      <ul className="divide-y divide-line">
-        {results?.map((item) => {
-          const key = item.isbn13 ?? item.title;
-          return (
-            <li key={key} className="flex items-center gap-3 py-3">
-              <Cover src={item.thumbnailUrl} title={item.title} className="w-12 shrink-0 rounded-sm" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{item.title}</p>
-                <p className="truncate text-xs text-muted">
-                  {[item.authors, item.publisher].filter(Boolean).join(" · ")}
-                </p>
-              </div>
-              <Button
-                variant="quiet"
-                disabled={shelving === key}
-                onClick={() => void shelve(item)}
-              >
-                {shelving === key ? "담는 중…" : "담기"}
-              </Button>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
+  return <>
+    <header className="page-heading"><div><h1>책 발견</h1><p>제목이나 작가로, 다음에 읽을 책을 찾아보세요.</p></div></header>
+    <div className="content-columns"><div className="min-w-0">
+      <form role="search" onSubmit={e => { e.preventDefault(); void search(query); }} className="search-box"><Icon name="search" className="h-5 w-5 shrink-0 text-accent" /><input ref={input} value={query} onChange={e => setQuery(e.target.value)} maxLength={100} aria-label="책 제목 또는 작가" placeholder="책 제목 또는 작가 검색" />{query && <button type="button" aria-label="검색어 지우기" onClick={() => { setQuery(""); input.current?.focus(); }} className="p-1 text-faint"><Icon name="close" className="h-4 w-4" /></button>}<Button type="submit" disabled={busy}>검색</Button></form>
+      {needsLogin && <div role="status" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-white px-4 py-3"><p className="text-foot text-muted">책 검색은 로그인 후 이용할 수 있어요.</p><Link href="/login" className="text-foot font-semibold text-accent">로그인하기 →</Link></div>}
+      {error && <div role="alert" className="mt-4 rounded-lg bg-danger/5 p-4 text-foot text-danger">{error}</div>}
+      {busy && <Spinner />}
+      {results !== null && !busy ? <section className="mt-7"><div className="section-heading"><h2>검색 결과 <span className="ml-1 text-accent">{results.length}</span></h2><button onClick={() => { ++requestId.current; setResults(null); setQuery(""); setError(null); }} className="text-cap text-muted">탐색으로 돌아가기</button></div>{results.length === 0 ? <Empty title={`‘${searched}’ 검색 결과가 없어요`} hint="제목의 일부나 작가 이름으로 다시 찾아보세요." /> : <ul>{results.map((item, index) => { const key = item.isbn13 ?? `${item.title}-${item.authors}`; return <li className="search-result" key={`${key}-${index}`}><Cover src={item.thumbnailUrl} title={item.title} className="w-[66px] shrink-0 sm:w-[72px]" /><div className="min-w-0 flex-1"><h3 className="text-headline leading-relaxed">{item.title}</h3><p className="mt-1.5 text-foot text-muted">{item.authors}</p><p className="mt-1 text-cap text-faint">{[item.publisher,item.publishedAt?.slice(0,4)].filter(Boolean).join(" · ")}</p><Button variant="quiet" onClick={() => void shelve(item)} disabled={shelving !== null} className="mt-3 gap-1.5"><Icon name="plus" className="h-3.5 w-3.5" />{shelving === key ? "담는 중" : "서재에 담기"}</Button></div></li>; })}</ul>}</section> : !busy && <>
+        {recent.length > 0 && <section className="mt-6"><div className="section-heading"><h2>최근 검색</h2><button className="text-cap text-muted" onClick={() => remember([])}>전체 삭제</button></div><div className="flex flex-wrap gap-2">{recent.map(term => <button className="keyword" key={term} onClick={() => void search(term)}><Icon name="clock" className="h-3.5 w-3.5" />{term}</button>)}</div></section>}
+        <section className="mt-8"><div className="section-heading"><h2>분야로 둘러보기</h2><span className="text-cap text-faint">어떤 이야기가 끌리나요?</span></div><div className="topic-grid">{topics.map((topic, i) => <button key={topic.title} onClick={() => void search(topic.title)} className="topic-card" style={{background:topic.color}}><div className="topic-copy"><strong>{topic.title}</strong><span>{topic.description}</span><Icon name="arrow" className="mt-5 h-4 w-4 text-muted" /></div><BookArt variant={i} /></button>)}</div></section>
+        <section className="mt-8 border-t border-line pt-6"><div className="section-heading"><h2>관심 있는 주제로</h2></div><div className="flex flex-wrap gap-2">{["한국문학","철학","심리학","예술","여행","자연"].map(term => <button key={term} className="keyword" onClick={() => void search(term)}>{term}<Icon name="arrow" className="h-3 w-3" /></button>)}</div></section>
+      </>}
+    </div><ContextRail /></div>
+  </>;
 }
