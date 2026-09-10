@@ -20,6 +20,8 @@ export type Profile = {
   displayName: string;
   bio: string | null;
   avatarUrl: string | null;
+  followerCount: number;
+  followingCount: number;
 };
 
 export type BookSearchResult = {
@@ -92,4 +94,31 @@ export type ApiErrorBody = {
   code: string;
   message: string;
   fieldErrors: FieldError[];
+};
+
+/** 목록에 함께 실리는 최소한의 사람 정보. 백엔드 UserSummaryResponse와 1:1이다. */
+export type UserSummary = {
+  handle: string;
+  displayName: string;
+  avatarUrl: string | null;
+};
+
+/**
+ * 감상평 한 건. 백엔드 PostResponse와 1:1이다.
+ *
+ * likeCount·commentCount는 지금도 실려 오지만 누를 곳은 아직 없다 — 좋아요와 댓글은
+ * 백엔드 Phase 6에서 생긴다. 숫자만 보여주고 버튼은 그때 만든다.
+ */
+export type Post = {
+  id: number;
+  author: UserSummary;
+  book: Book;
+  readingId: number | null;
+  content: string;
+  fromPage: number | null;
+  toPage: number | null;
+  spoiler: boolean;
+  likeCount: number;
+  commentCount: number;
+  createdAt: string;
 };
