@@ -44,12 +44,17 @@ export default function HomePage() {
     <div className="content-columns"><div className="min-w-0"><div className="section-heading"><h2>지금 읽는 책 <span className="ml-1 text-accent">{reading.length || ""}</span></h2><Link href="/library" className="text-cap text-muted">서재 전체 →</Link></div>
       {busy ? <Spinner /> : error ? <Empty title="책을 불러오지 못했어요" hint="잠시 후 서재에서 다시 확인해 주세요." action={<LinkButton href="/library">서재 열기</LinkButton>} /> : reading.length === 0 ? <Empty title="지금 읽는 책을 추가해 보세요" hint="서재의 책을 ‘읽는 중’으로 바꾸면 여기서 바로 기록할 수 있어요." action={<LinkButton href="/library">내 서재에서 선택</LinkButton>} /> : <ul className="space-y-3">{reading.map(item=><li key={item.reading.id} className="reading-row"><Cover src={item.book.thumbnailUrl} title={item.book.title} className="w-[64px] shrink-0" /><div className="min-w-0 flex-1"><span className="status-tag" data-reading="true">읽는 중</span><h3 className="mt-2 text-headline">{item.book.title}</h3><p className="mt-1 text-cap text-muted">{item.book.authors}</p><div className="mt-3 flex flex-wrap items-center justify-between gap-2"><span className="text-cap tabular-nums text-muted">{item.reading.currentPage}{item.reading.pageCount ? ` / ${item.reading.pageCount}` : ""}쪽</span><Button variant="quiet" className="gap-1.5" onClick={()=>setSelected(item)}><Icon name="pen" className="h-3.5 w-3.5" />페이지 기록</Button></div></div></li>)}</ul>}
       {!busy && finished.length > 0 && <section className="mt-8"><div className="section-heading"><h2>올해 읽은 책</h2><Link href="/library" className="text-cap text-muted">더 보기 →</Link></div><div className="flex gap-5 overflow-x-auto pb-3">{finished.map(item=><button key={item.reading.id} onClick={()=>setSelected(item)} className="w-[82px] shrink-0 text-left"><Cover src={item.book.thumbnailUrl} title={item.book.title} /><p className="mt-2 line-clamp-2 text-cap">{item.book.title}</p></button>)}</div></section>}
+      {/*
+        둘러보기는 타임라인이 비었을 때만 그 자리에 선다.
+        둘 다 그리면 팔로우한 사람의 글이 타임라인에 한 번, 전체 최신에 또 한 번 나온다 —
+        글 두 건이 카드 넉 장이 되어, 읽을 것이 많아 보이는 대신 같은 말을 두 번 하게 된다.
+      */}
       <section className="mt-10"><div className="section-heading"><h2>타임라인</h2><Link href="/search" className="text-cap text-muted">사람 찾기 →</Link></div>
-        <Feed key="timeline" path="/api/v1/feed" empty={<Empty title="타임라인이 비어 있어요" hint="관심 있는 사람을 팔로우하면 그들의 감상평이 여기로 흘러옵니다. 아래에서 다른 사람들의 기록부터 둘러보세요." />} />
-      </section>
-      {/* 팔로우한 사람이 없어도 볼 것이 있어야 한다. 타임라인이 비었을 때 이 자리가 대신 채운다. */}
-      <section className="mt-10"><div className="section-heading"><h2>둘러보기</h2><span className="text-cap text-faint">전체 최신</span></div>
-        <Feed key="explore" path="/api/v1/feed/explore" empty={<Empty title="아직 남겨진 감상평이 없어요" hint="첫 기록을 남기는 사람이 되어 보세요." />} />
+        <Feed key="timeline" path="/api/v1/feed" empty={<>
+          <Empty title="타임라인이 비어 있어요" hint="관심 있는 사람을 팔로우하면 그들의 감상평이 여기로 흘러옵니다. 우선 다른 사람들의 기록부터 둘러보세요." />
+          <div className="mt-10 section-heading"><h2>둘러보기</h2><span className="text-cap text-faint">전체 최신</span></div>
+          <Feed key="explore" path="/api/v1/feed/explore" empty={<Empty title="아직 남겨진 감상평이 없어요" hint="첫 기록을 남기는 사람이 되어 보세요." />} />
+        </>} />
       </section>
     </div><ContextRail /></div>
     {selected && <ReadingSheet item={selected} onClose={()=>setSelected(null)} onChanged={r=>{ const updated={...selected,reading:r}; setReading(items=>[...items.filter(item=>item.reading.id!==r.id),...(r.status==="READING"?[updated]:[])]); setFinished(items=>[...items.filter(item=>item.reading.id!==r.id),...(r.status==="FINISHED"&&r.finishedAt?.startsWith(String(new Date().getFullYear()))?[updated]:[])]); setSelected(updated); }} onRemoved={id=>{setReading(items=>items.filter(item=>item.reading.id!==id));setFinished(items=>items.filter(item=>item.reading.id!==id));setSelected(null);}} />}
