@@ -95,6 +95,12 @@ button:not(:disabled),a {cursor:pointer;}
  .step-row {display:flex;gap:16px;padding:22px 0;border-bottom:1px solid var(--color-line);}
  .step-number {font-size:12px;color:var(--color-accent);background:var(--color-fill);width:28px;height:28px;display:grid;place-items:center;border-radius:50%;flex-shrink:0;}
  .reading-row {display:flex;align-items:center;gap:18px;padding:20px;background:white;border:1px solid var(--color-line);border-radius:12px;}
+ .post-card {padding:22px 0;border-bottom:1px solid var(--color-line);}
+ .post-card:first-child {padding-top:4px;}
+ .post-body {display:flex;gap:16px;margin-top:14px;}
+ .spoiler-veil {display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:12px;padding:16px;border-radius:10px;background:var(--color-fill);color:var(--color-muted);font-size:13px;transition:background .2s;}
+ .spoiler-veil:hover {background:#e9ede5;}
+ .post-counts {display:flex;gap:16px;margin-top:14px;padding-left:68px;color:var(--color-faint);font-size:12px;}
  .auth-layout {min-height:100dvh;display:grid;grid-template-columns:1fr 1fr;background:white;}
  .auth-story {background:#edf3e9;padding:48px;display:flex;flex-direction:column;justify-content:space-between;}
  .auth-story h2 {font-size:32px;line-height:1.4;font-weight:650;}
