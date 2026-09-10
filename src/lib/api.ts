@@ -87,8 +87,28 @@ export async function api<T>(path: string, options: Options = {}): Promise<T> {
   return payload as T;
 }
 
+/**
+ * 진행 중인 재발급. 여럿이 동시에 불러도 요청은 하나다.
+ *
+ * refresh 토큰은 서버에서 한 번 쓰면 회전한다(AuthService.reissue의 rotate). 그래서 두 번을
+ * 나란히 보내면 먼저 닿은 쪽만 200을 받고 나머지는 401이 된다 — 이미 쓰인 토큰이기 때문이다.
+ * 그 401이 방금 받아 둔 새 access 토큰을 지우면, 재발급에 성공하고도 로그아웃된다.
+ *
+ * 나란히 부르는 일은 예외가 아니라 기본이다. 화면 하나가 여러 요청을 함께 띄우는데 access
+ * 토큰이 만료돼 있으면 그 요청들이 일제히 401을 받고 저마다 재발급을 부른다. 개발 중에는
+ * StrictMode가 효과를 두 번 실행해 새로고침할 때마다 이 일이 벌어진다.
+ */
+let reissuing: Promise<boolean> | null = null;
+
 /** 성공하면 새 access 토큰을 들여놓는다. */
-export async function reissue(): Promise<boolean> {
+export function reissue(): Promise<boolean> {
+  reissuing ??= runReissue().finally(() => {
+    reissuing = null;
+  });
+  return reissuing;
+}
+
+async function runReissue(): Promise<boolean> {
   const response = await fetch("/api/v1/auth/reissue", {
     method: "POST",
     credentials: "same-origin",
