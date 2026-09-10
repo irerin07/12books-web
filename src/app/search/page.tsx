@@ -1,9 +1,10 @@
 "use client";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ApiError, api } from "@/lib/api";
 import { useSession } from "@/lib/session";
+import { parseHistory, readHistory, rememberSearch, subscribeHistory, writeHistory } from "@/lib/searchHistory";
 import type { Book, BookSearchPage, BookSearchResult, Reading } from "@/lib/types";
 import { Button, Cover, Empty, Spinner } from "@/components/ui";
 import Icon from "@/components/Icon";
@@ -16,13 +17,6 @@ const topics = [
   {title:"인문",description:"생각의 폭을 넓히는",color:"#ecf1f6"},
   {title:"과학",description:"세상을 이해하는",color:"#f1eef7"},
 ];
-function subscribeHistory(callback: () => void) {
-  window.addEventListener("12books-search-change", callback);
-  return () => window.removeEventListener("12books-search-change", callback);
-}
-function readHistory() {
-  try { return sessionStorage.getItem("12books-searches") ?? "[]"; } catch { return "[]"; }
-}
 export default function SearchPage() {
   return <Suspense fallback={<Spinner />}><SearchRoute /></Suspense>;
 }
@@ -38,10 +32,10 @@ function SearchContent({ term }: { term: string }) {
   const searched = term;
   const [retry, setRetry] = useState(0);
   const [results, setResults] = useState<BookSearchResult[] | null>(null);
-  const history = useSyncExternalStore(subscribeHistory, readHistory, () => "[]");
-  const recent = useMemo(() => {
-    try { const saved: unknown = JSON.parse(history); return Array.isArray(saved) ? saved.filter((q): q is string => typeof q === "string").slice(0, 5) : []; } catch { return []; }
-  }, [history]);
+  /* 최근 검색은 계정마다 따로 담긴다. 로그인한 사람이 없으면 보여줄 것도 없다. */
+  const mine = useCallback(() => readHistory(me?.handle ?? null), [me]);
+  const history = useSyncExternalStore(subscribeHistory, mine, () => "[]");
+  const recent = useMemo(() => parseHistory(history), [history]);
   const [busy, setBusy] = useState(Boolean(term && me));
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
@@ -56,9 +50,6 @@ function SearchContent({ term }: { term: string }) {
   useEffect(() => {
     return () => { requestId.current += 1; };
   }, []);
-  function remember(values: string[]) {
-    try { sessionStorage.setItem("12books-searches", JSON.stringify(values)); window.dispatchEvent(new Event("12books-search-change")); } catch { /* Optional history. */ }
-  }
   function search(value: string) {
     const q = value.trim();
     if (!q) { input.current?.focus(); return; }
@@ -76,12 +67,7 @@ function SearchContent({ term }: { term: string }) {
         if (id !== requestId.current) return;
         setResults(found.items);
         setPage(found.page); setHasNext(found.hasNext); setTotal(found.totalCount);
-        try {
-          const saved: unknown = JSON.parse(readHistory());
-          const previous = Array.isArray(saved) ? saved.filter((q): q is string => typeof q === "string" && q !== term) : [];
-          sessionStorage.setItem("12books-searches", JSON.stringify([term, ...previous].slice(0, 5)));
-          window.dispatchEvent(new Event("12books-search-change"));
-        } catch { /* Search history is optional. */ }
+        rememberSearch(me.handle, term);
       })
       .catch(e => {
         if (id !== requestId.current) return;
@@ -122,7 +108,7 @@ function SearchContent({ term }: { term: string }) {
       {error && <div role="alert" className="mt-4 rounded-lg bg-danger/5 p-4 text-foot text-danger">{error}</div>}
       {busy && <Spinner />}
       {results !== null && !busy ? <section className="mt-7"><div className="section-heading"><h2>검색 결과 <span className="ml-1 text-accent">{total > 0 ? total : results.length}</span></h2><button onClick={() => router.push("/search")} className="text-cap text-muted">탐색으로 돌아가기</button></div>{results.length === 0 ? <Empty title={`‘${searched}’ 검색 결과가 없어요`} hint="제목의 일부나 작가 이름으로 다시 찾아보세요." /> : <ul>{results.map((item, index) => { const key = item.isbn13 ?? `${item.title}-${item.authors}`; return <li className="search-result" key={`${key}-${index}`}><Cover src={item.thumbnailUrl} title={item.title} className="w-[66px] shrink-0 sm:w-[72px]" /><div className="min-w-0 flex-1"><h3 className="text-headline leading-relaxed">{item.title}</h3><p className="mt-1.5 text-foot text-muted">{item.authors}</p><p className="mt-1 text-cap text-faint">{[item.publisher,item.publishedAt?.slice(0,4)].filter(Boolean).join(" · ")}</p><Button variant="quiet" onClick={() => void shelve(item)} disabled={shelving !== null} className="mt-3 gap-1.5"><Icon name="plus" className="h-3.5 w-3.5" />{shelving === key ? "담는 중" : "서재에 담기"}</Button></div></li>; })}</ul>}{hasNext && <div className="mt-8 text-center"><Button variant="quiet" onClick={() => void loadMore()} disabled={moreBusy}>{moreBusy ? "불러오는 중" : "더 보기"}</Button></div>}</section> : !busy && <>
-        {recent.length > 0 && <section className="mt-6"><div className="section-heading"><h2>최근 검색</h2><button className="text-cap text-muted" onClick={() => remember([])}>전체 삭제</button></div><div className="flex flex-wrap gap-2">{recent.map(term => <button className="keyword" key={term} onClick={() => void search(term)}><Icon name="clock" className="h-3.5 w-3.5" />{term}</button>)}</div></section>}
+        {recent.length > 0 && <section className="mt-6"><div className="section-heading"><h2>최근 검색</h2><button className="text-cap text-muted" onClick={() => writeHistory(me?.handle ?? null, [])}>전체 삭제</button></div><div className="flex flex-wrap gap-2">{recent.map(term => <button className="keyword" key={term} onClick={() => void search(term)}><Icon name="clock" className="h-3.5 w-3.5" />{term}</button>)}</div></section>}
         <section className="mt-8"><div className="section-heading"><h2>주제 키워드로 검색</h2><span className="text-cap text-faint">선택한 단어로 책을 검색해요</span></div><div className="topic-grid">{topics.map((topic, i) => <button key={topic.title} onClick={() => void search(topic.title)} className="topic-card" style={{background:topic.color}}><div className="topic-copy"><strong>{topic.title}</strong><span>{topic.description}</span><Icon name="arrow" className="mt-5 h-4 w-4 text-muted" /></div><BookArt variant={i} /></button>)}</div></section>
         <section className="mt-8 border-t border-line pt-6"><div className="section-heading"><h2>관심 있는 주제로</h2></div><div className="flex flex-wrap gap-2">{["한국문학","철학","심리학","예술","여행","자연"].map(term => <button key={term} className="keyword" onClick={() => void search(term)}>{term}<Icon name="arrow" className="h-3 w-3" /></button>)}</div></section>
       </>}
