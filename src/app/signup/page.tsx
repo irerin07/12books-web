@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ApiError, api } from "@/lib/api";
 import { useSession } from "@/lib/session";
-import { Button, Field } from "@/components/ui";
+import AuthFrame from "@/components/AuthFrame";
+import { Button, Field, FieldGroup } from "@/components/ui";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -39,35 +40,42 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-6">
-      <h1 className="mb-1 text-center text-3xl font-semibold tracking-tight">12books</h1>
-      <p className="mb-8 text-center text-sm text-muted">읽고 있는 책을 기록해 보세요</p>
+    <AuthFrame><h1 className="text-title">내 서재 만들기</h1><p className="mt-2 mb-7 text-callout text-muted">12books에서 나의 독서 생활을 시작하세요.</p>
+        <form onSubmit={submit}>
+          {/*
+            길이 규칙은 서버가 가진다. 여기 적힌 "8~20자"는 검사하는 값이 아니라 안내일 뿐이고,
+            실제로 막는 것은 서버가 준 fieldErrors다.
+          */}
+          <FieldGroup>
+            <Field label="이메일" type="email" placeholder="name@example.com"
+              value={form.email} onChange={set("email")}
+              error={error?.reasonFor("email")} required />
+            <Field label="비밀번호" type="password" placeholder="8~20자"
+              value={form.password} onChange={set("password")}
+              error={error?.reasonFor("password")} required />
+            <Field label="아이디" placeholder="영소문자·숫자·_ 3~20자"
+              value={form.handle} onChange={set("handle")}
+              error={error?.reasonFor("handle")} required />
+            <Field label="이름" placeholder="서재에 보일 이름"
+              value={form.displayName} onChange={set("displayName")}
+              error={error?.reasonFor("displayName")} required />
+          </FieldGroup>
 
-      <form onSubmit={submit} className="flex flex-col gap-3">
-        <Field label="이메일" type="email" value={form.email} onChange={set("email")}
-          error={error?.reasonFor("email")} required />
-        <Field label="비밀번호 (8~20자)" type="password" value={form.password} onChange={set("password")}
-          error={error?.reasonFor("password")} required />
-        <Field label="handle (영소문자·숫자·_ 3~20자)" value={form.handle} onChange={set("handle")}
-          error={error?.reasonFor("handle")} required />
-        <Field label="이름" value={form.displayName} onChange={set("displayName")}
-          error={error?.reasonFor("displayName")} required />
+          {error && error.fieldErrors.length === 0 ? (
+            <p className="mt-3.5 text-center text-callout text-danger">{error.message}</p>
+          ) : null}
 
-        {error && error.fieldErrors.length === 0 ? (
-          <p className="text-center text-sm text-danger">{error.message}</p>
-        ) : null}
+          <Button type="submit" size="lg" disabled={busy} className="mt-5 w-full">
+            {busy ? "만드는 중…" : "가입하기"}
+          </Button>
+        </form>
 
-        <Button type="submit" disabled={busy} className="mt-2 h-10 w-full">
-          {busy ? "만드는 중…" : "가입하기"}
-        </Button>
-      </form>
-
-      <p className="mt-8 text-center text-sm text-muted">
-        이미 계정이 있나요?{" "}
-        <Link href="/login" className="font-semibold text-accent">
-          로그인
-        </Link>
-      </p>
-    </div>
+        <p className="mt-8 text-center text-callout text-muted">
+          이미 계정이 있나요?{" "}
+          <Link href="/login" className="font-medium text-accent hover:opacity-65">
+            로그인
+          </Link>
+        </p>
+    </AuthFrame>
   );
 }

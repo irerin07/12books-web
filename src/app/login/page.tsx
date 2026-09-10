@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ApiError } from "@/lib/api";
 import { useSession } from "@/lib/session";
-import { Button, Field } from "@/components/ui";
+import AuthFrame from "@/components/AuthFrame";
+import { Button, Field, FieldGroup } from "@/components/ui";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,39 +33,43 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-6">
-      <h1 className="mb-1 text-center text-3xl font-semibold tracking-tight">12books</h1>
-      <p className="mb-8 text-center text-sm text-muted">읽은 만큼 기록하고 나눕니다</p>
+    <AuthFrame><h1 className="text-title">로그인</h1><p className="mt-2 mb-7 text-callout text-muted">내 서재에서 읽던 책을 이어가세요.</p>
+        <form onSubmit={submit}>
+          <FieldGroup>
+            <Field
+              label="이메일"
+              type="email"
+              autoComplete="email"
+              placeholder="name@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <Field
+              label="비밀번호"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </FieldGroup>
 
-      <form onSubmit={submit} className="flex flex-col gap-3">
-        <Field
-          label="이메일"
-          type="email"
-          autoComplete="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <Field
-          label="비밀번호"
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        {error ? <p className="text-center text-sm text-danger">{error}</p> : null}
-        <Button type="submit" disabled={busy} className="mt-2 h-10 w-full">
-          {busy ? "확인 중…" : "로그인"}
-        </Button>
-      </form>
+          {error ? (
+            <p className="mt-3.5 text-center text-callout text-danger">{error}</p>
+          ) : null}
 
-      <p className="mt-8 text-center text-sm text-muted">
-        계정이 없나요?{" "}
-        <Link href="/signup" className="font-semibold text-accent">
-          가입하기
-        </Link>
-      </p>
-    </div>
+          <Button type="submit" size="lg" disabled={busy} className="mt-5 w-full">
+            {busy ? "확인 중…" : "로그인"}
+          </Button>
+        </form>
+
+        <p className="mt-8 text-center text-callout text-muted">
+          계정이 없나요?{" "}
+          <Link href="/signup" className="font-medium text-accent hover:opacity-65">
+            가입하기
+          </Link>
+        </p>
+    </AuthFrame>
   );
 }

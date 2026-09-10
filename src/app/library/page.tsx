@@ -1,136 +1,57 @@
 "use client";
-
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import type { CursorPage, LibraryItem, ReadingStatus } from "@/lib/types";
 import { READING_STATUS_LABEL } from "@/lib/types";
 import LibraryGrid from "@/components/LibraryGrid";
 import ReadingSheet from "@/components/ReadingSheet";
-import { Button, Empty, SignInWall, Spinner } from "@/components/ui";
+import { Button, Empty, LinkButton, Spinner } from "@/components/ui";
+import Icon from "@/components/Icon";
+import BookArt from "@/components/BookArt";
 
-const FILTERS: { value: ReadingStatus | ""; label: string }[] = [
-  { value: "", label: "전체" },
-  { value: "READING", label: READING_STATUS_LABEL.READING },
-  { value: "WANT_TO_READ", label: READING_STATUS_LABEL.WANT_TO_READ },
-  { value: "FINISHED", label: READING_STATUS_LABEL.FINISHED },
-  { value: "PAUSED", label: READING_STATUS_LABEL.PAUSED },
-  { value: "DROPPED", label: READING_STATUS_LABEL.DROPPED },
-];
-
+const FILTERS: {value:ReadingStatus|"";label:string}[] = [{value:"",label:"전체"},{value:"READING",label:"읽는 중"},{value:"WANT_TO_READ",label:"읽고 싶은"},{value:"FINISHED",label:"읽은 책"},{value:"PAUSED",label:"잠시 멈춘"},{value:"DROPPED",label:"그만 읽은"}];
+type Shelf = CursorPage<LibraryItem> & {key:string; error?:string};
 export default function LibraryPage() {
-  const { me, loading } = useSession();
-  const [status, setStatus] = useState<ReadingStatus | "">("");
-  const [items, setItems] = useState<LibraryItem[]>([]);
-  const [cursor, setCursor] = useState<number | null>(null);
-  const [hasNext, setHasNext] = useState(false);
-  const [busy, setBusy] = useState(true);
-  const [selected, setSelected] = useState<LibraryItem | null>(null);
-
-  /** 상태만 바꾸지 않는 순수 조회. 효과와 버튼이 함께 쓴다. */
-  const fetchPage = useCallback(
-    async (next: number | null) => {
-      const params = new URLSearchParams({ size: "24" });
-      if (status) params.set("status", status);
-      if (next !== null) params.set("cursor", String(next));
-      return api<CursorPage<LibraryItem>>(`/api/v1/users/${me!.handle}/library?${params}`);
-    },
-    [me, status],
-  );
-
-  /**
-   * 첫 장을 읽는다. 필터를 빠르게 바꾸면 이전 요청이 늦게 도착해 새 결과를 덮을 수 있어
-   * 취소 표시를 둔다 — 늦게 온 응답은 버린다.
-   */
-  useEffect(() => {
-    if (!me) return;
-    let cancelled = false;
-    void (async () => {
-      const page = await fetchPage(null);
-      if (cancelled) return;
-      setItems(page.items);
-      setCursor(page.nextCursor);
-      setHasNext(page.hasNext);
-      setBusy(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [me, fetchPage]);
-
-  async function loadMore() {
-    setBusy(true);
-    const page = await fetchPage(cursor);
-    setItems((prev) => [...prev, ...page.items]);
-    setCursor(page.nextCursor);
-    setHasNext(page.hasNext);
-    setBusy(false);
+  const { me } = useSession();
+  const [status,setStatus]=useState<ReadingStatus|"">("");
+  const [shelf,setShelf]=useState<Shelf|null>(null);
+  const [selected,setSelected]=useState<LibraryItem|null>(null);
+  const [moreBusy,setMoreBusy]=useState(false);
+  const [attempt,setAttempt]=useState(0);
+  const key=`${me?.handle}:${status}:${attempt}`;
+  const activeKey=useRef(key);
+  const fetchPage=useCallback((cursor:number|null)=>{
+    const params=new URLSearchParams({size:"24"});
+    if(status) params.set("status",status);
+    if(cursor!==null) params.set("cursor",String(cursor));
+    return api<CursorPage<LibraryItem>>(`/api/v1/users/${me!.handle}/library?${params}`);
+  },[me,status]);
+  useEffect(()=>{
+    activeKey.current=key;
+    if(!me) return;
+    let active=true;
+    void fetchPage(null).then(page=>{if(active)setShelf({...page,key});}).catch(()=>{if(active)setShelf({key,items:[],hasNext:false,nextCursor:null,error:"서재를 불러오지 못했습니다."});});
+    return ()=>{active=false;};
+  },[key,me,fetchPage]);
+  async function loadMore(){
+    if(!shelf||moreBusy)return;
+    setMoreBusy(true);
+    try {const page=await fetchPage(shelf.nextCursor);if(activeKey.current===key)setShelf(prev=>prev?.key===key?{...page,key,items:[...prev.items,...page.items]}:prev);}
+    catch {if(activeKey.current===key)setShelf(prev=>prev?{...prev,error:"추가 책을 불러오지 못했습니다. 다시 시도해 주세요."}:prev);}
+    finally {setMoreBusy(false);}
   }
-
-  if (loading) return null;
-  if (!me) return <SignInWall />;
-
-  return (
-    <div>
-      <h1 className="mb-4 text-xl font-semibold">내 서재</h1>
-
-      <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
-        {FILTERS.map((f) => (
-          <button
-            key={f.value}
-            onClick={() => setStatus(f.value)}
-            className={`shrink-0 rounded-full border px-3 py-1 text-xs transition ${
-              status === f.value
-                ? "border-ink bg-ink text-canvas"
-                : "border-line text-muted hover:text-ink"
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-
-      {items.length === 0 && !busy ? (
-        <Empty
-          title="아직 담은 책이 없습니다"
-          hint="검색에서 책을 찾아 서재에 담아 보세요."
-          action={
-            <Link href="/search" className="text-sm font-semibold text-accent">
-              책 찾으러 가기
-            </Link>
-          }
-        />
-      ) : (
-        <LibraryGrid items={items} onSelect={setSelected} />
-      )}
-
-      {selected ? (
-        <ReadingSheet
-          item={selected}
-          onClose={() => setSelected(null)}
-          onChanged={(reading) => {
-            setItems((prev) =>
-              prev.map((it) => (it.reading.id === reading.id ? { ...it, reading } : it)),
-            );
-            setSelected((prev) => (prev ? { ...prev, reading } : prev));
-          }}
-          onRemoved={(id) => {
-            setItems((prev) => prev.filter((it) => it.reading.id !== id));
-            setSelected(null);
-          }}
-        />
-      ) : null}
-
-      {busy ? <Spinner /> : null}
-
-      {hasNext && !busy ? (
-        <div className="flex justify-center py-6">
-          <Button variant="quiet" onClick={() => void loadMore()}>
-            더 보기
-          </Button>
-        </div>
-      ) : null}
-    </div>
-  );
+  const current=shelf?.key===key?shelf:null;
+  return <>
+    <header className="page-heading"><div><h1>내 서재</h1><p>{me ? "읽고 싶은 책부터 오래 기억할 책까지." : "관심 있는 책을 모으고, 읽는 과정을 기록하세요."}</p></div><LinkButton href={me?"/search":"/signup"}><Icon name="plus" className="mr-1.5 h-4 w-4" />{me?"책 담기":"시작하기"}</LinkButton></header>
+    {!me ? <><section className="welcome-banner"><div><h2 className="text-title font-semibold">아직 비어 있는, 나만의 서재</h2><p className="mt-3">책 한 권을 담는 것부터 시작해 보세요.<br />읽는 중 · 읽고 싶은 · 읽은 책으로 정리할 수 있어요.</p><Link href="/login" className="mt-5 inline-flex items-center gap-2 text-callout font-semibold text-accent">로그인하고 서재 만들기<Icon name="arrow" className="h-4 w-4" /></Link></div><BookArt /></section><div className="mt-6 grid gap-4 sm:grid-cols-3">{[{name:"읽고 싶은 책",icon:"plus" as const,text:"다음에 읽을 책을 미리 담아 두세요."},{name:"읽는 중인 책",icon:"book" as const,text:"현재 페이지를 기록하며 이어 읽으세요."},{name:"다 읽은 책",icon:"check" as const,text:"함께한 책들이 나만의 서재가 됩니다."}].map(step=><div key={step.name} className="panel p-5"><Icon name={step.icon} className="mb-4 h-5 w-5 text-accent" /><h3 className="text-headline">{step.name}</h3><p className="mt-2 text-foot text-muted">{step.text}</p></div>)}</div></> : <>
+      <div className="mb-6 overflow-x-auto"><div className="segmented min-w-max">{FILTERS.map(filter=><button key={filter.value} data-on={status===filter.value} aria-pressed={status===filter.value} onClick={()=>setStatus(filter.value)} className="segmented-item shrink-0 text-callout font-medium">{filter.label}</button>)}</div></div>
+      {current && <div className="mb-5 flex items-center justify-between text-cap text-muted"><span>{current.items.length}{current.hasNext?"+":""}권</span><span className="flex items-center gap-1.5"><Icon name="grid" className="h-3.5 w-3.5" />표지 보기</span></div>}
+      {current?.error && <div role="alert" className="mb-5 flex items-center justify-between gap-3 rounded-lg bg-danger/5 p-4 text-foot text-danger">{current.error}<button onClick={()=>setAttempt(a=>a+1)} className="shrink-0 underline">다시 시도</button></div>}
+      {!current ? <Spinner /> : current.items.length ? <LibraryGrid items={current.items} onSelect={setSelected} /> : !current.error && <Empty title={status?`${READING_STATUS_LABEL[status]} 책이 없어요`:"첫 번째 책을 담아 보세요"} hint={status?"책의 읽기 상태를 변경하면 여기에 표시됩니다.":"검색에서 책을 찾아 내 서재에 추가할 수 있어요."} action={<LinkButton href="/search">책 찾기</LinkButton>} />}
+      {current?.hasNext && <div className="mt-8 text-center"><Button variant="quiet" onClick={()=>void loadMore()} disabled={moreBusy}>{moreBusy?"불러오는 중":"더 보기"}</Button></div>}
+    </>}
+    {selected && <ReadingSheet item={selected} onClose={()=>setSelected(null)} onChanged={reading=>{setShelf(prev=>prev?{...prev,items:prev.items.flatMap(item=>item.reading.id===reading.id?(!status||reading.status===status?[{...item,reading}]:[]):[item])}:prev);setSelected({...selected,reading});}} onRemoved={id=>{setShelf(prev=>prev?{...prev,items:prev.items.filter(item=>item.reading.id!==id)}:prev);setSelected(null);}} />}
+  </>;
 }

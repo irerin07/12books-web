@@ -79,62 +79,53 @@ export default function ProfilePage({
   if (!profile) return <Spinner />;
 
   const isMine = me?.handle === profile.handle;
-  const finished = items.filter((i) => i.reading.status === "FINISHED").length;
-  const reading = items.filter((i) => i.reading.status === "READING").length;
+
+
 
   return (
     <div>
-      <header className="flex items-center gap-6 py-4 sm:gap-10 sm:py-8">
-        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full bg-black/5 sm:h-32 sm:w-32 dark:bg-white/10">
+      {/* 인스타의 프로필 골격 — 아바타, 숫자 줄, 소개, 격자. 다만 담기는 것은 표지다. */}
+      <header className="panel flex items-center gap-5 p-6 sm:p-8">
+        <div className="h-[88px] w-[88px] shrink-0 overflow-hidden rounded-full bg-fill shadow-card ring-1 ring-line sm:h-[88px] sm:w-[88px]">
           {profile.avatarUrl ? (
             // 아바타는 어떤 주소든 올 수 있어 next/image의 허용 목록에 기대지 않는다
             // eslint-disable-next-line @next/next/no-img-element
             <img src={profile.avatarUrl} alt="" className="h-full w-full object-cover" />
-          ) : null}
+          ) : (
+            <span className="flex h-full w-full items-center justify-center text-title text-faint">
+              {profile.displayName.slice(0, 1)}
+            </span>
+          )}
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-4">
-            <h1 className="truncate text-lg">{profile.handle}</h1>
-            {isMine ? (
-              <Button variant="quiet" onClick={() => void logout()}>
-                로그아웃
-              </Button>
-            ) : null}
-          </div>
-
-          <dl className="mt-4 flex gap-6 text-sm">
-            <div className="flex gap-1">
-              <dt className="text-muted">담은 책</dt>
-              <dd className="font-semibold">{items.length}{hasNext ? "+" : ""}</dd>
-            </div>
-            <div className="flex gap-1">
-              <dt className="text-muted">완독</dt>
-              <dd className="font-semibold">{finished}</dd>
-            </div>
-            <div className="flex gap-1">
-              <dt className="text-muted">읽는 중</dt>
-              <dd className="font-semibold">{reading}</dd>
-            </div>
-          </dl>
-
-          <p className="mt-3 text-sm font-semibold">{profile.displayName}</p>
-          {profile.bio ? <p className="text-sm whitespace-pre-line">{profile.bio}</p> : null}
+          <h1 className="truncate text-title">
+            {profile.displayName}
+          </h1>
+          <p className="mt-1 truncate text-callout text-muted">@{profile.handle}</p>
+          {profile.bio ? (
+            <p className="mt-3 text-body whitespace-pre-line">{profile.bio}</p>
+          ) : null}
+          {isMine ? (
+            <Button variant="quiet" onClick={() => void logout()} className="mt-4">
+              로그아웃
+            </Button>
+          ) : null}
         </div>
       </header>
 
-      <div className="border-t border-line pt-4">
+      <div className="mt-8"><div className="section-heading"><h2>서재</h2><span className="text-cap text-muted">{items.length}{hasNext ? "+" : ""}권</span></div>
         {items.length === 0 && !busy ? (
           <Empty title="아직 서재가 비어 있습니다" />
         ) : (
-          <LibraryGrid items={items} onSelect={isMine ? setSelected : () => {}} />
+          <LibraryGrid items={items} onSelect={isMine ? setSelected : undefined} />
         )}
       </div>
 
       {busy ? <Spinner /> : null}
 
       {hasNext && !busy ? (
-        <div className="flex justify-center py-6">
+        <div className="flex justify-center py-8">
           <Button variant="quiet" onClick={() => void loadMore()}>
             더 보기
           </Button>
