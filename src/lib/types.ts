@@ -33,6 +33,20 @@ export type BookSearchResult = {
   signature: string;
 };
 
+/**
+ * 검색 결과 한 페이지. 백엔드 BookSearchPage와 1:1이다.
+ *
+ * 내부 목록의 CursorPage와 items·hasNext 이름이 같지만 커서가 아니라 쪽번호다 —
+ * 원본(카카오)이 쪽번호로 넘기기 때문이고, 서버가 커서를 지어내지 않기로 한 결과다.
+ */
+export type BookSearchPage = {
+  items: BookSearchResult[];
+  page: number;
+  hasNext: boolean;
+  /** 카카오가 알려준 전체 결과 수. 모르면 0이다. */
+  totalCount: number;
+};
+
 export type Book = {
   id: number;
   isbn13: string | null;
