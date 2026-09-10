@@ -22,6 +22,21 @@ export type Profile = {
   avatarUrl: string | null;
   followerCount: number;
   followingCount: number;
+  /** 보는 사람이 이 사람을 팔로우 중인지. 내 프로필에서는 항상 false다. */
+  isFollowing: boolean;
+};
+
+/**
+ * 팔로워·팔로잉 목록의 한 줄. 백엔드 FollowItemResponse와 1:1이다.
+ *
+ * UserSummary와 필드가 겹치지만 따로 두는 이유는 서버가 나눠 둔 이유와 같다 — 피드의
+ * 작성자에는 이 관계가 계산되지 않으므로, 그 자리에 isFollowing이 있으면 거짓말이 된다.
+ */
+export type FollowItem = {
+  handle: string;
+  displayName: string;
+  avatarUrl: string | null;
+  isFollowing: boolean;
 };
 
 export type BookSearchResult = {
