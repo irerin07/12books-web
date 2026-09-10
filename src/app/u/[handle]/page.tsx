@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { use, useCallback, useEffect, useState } from "react";
 import { ApiError, api } from "@/lib/api";
 import { useSession } from "@/lib/session";
@@ -7,6 +8,7 @@ import type { CursorPage, LibraryItem, Profile } from "@/lib/types";
 import LibraryGrid from "@/components/LibraryGrid";
 import ReadingSheet from "@/components/ReadingSheet";
 import { Button, Empty, Spinner } from "@/components/ui";
+import FollowButton from "@/components/FollowButton";
 
 /**
  * 프로필. 인스타의 프로필과 같은 골격이다 — 아바타, 숫자 몇 개, 소개, 그리고 격자.
@@ -106,11 +108,41 @@ export default function ProfilePage({
           {profile.bio ? (
             <p className="mt-3 text-body whitespace-pre-line">{profile.bio}</p>
           ) : null}
-          {isMine ? (
-            <Button variant="quiet" onClick={() => void logout()} className="mt-4">
-              로그아웃
-            </Button>
-          ) : null}
+          {/*
+            숫자 줄. 팔로워·팔로잉은 눌러서 목록으로 갈 수 있고, 서재 권수는 갈 곳이 없어
+            글자로만 둔다 — 누를 수 없는 것을 링크처럼 보이게 하지 않는다.
+          */}
+          <dl className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-foot">
+            <Link href={`/u/${profile.handle}/followers`} className="hover:text-accent">
+              <dt className="inline text-muted">팔로워 </dt>
+              <dd className="inline font-semibold tabular-nums">{profile.followerCount}</dd>
+            </Link>
+            <Link href={`/u/${profile.handle}/followings`} className="hover:text-accent">
+              <dt className="inline text-muted">팔로잉 </dt>
+              <dd className="inline font-semibold tabular-nums">{profile.followingCount}</dd>
+            </Link>
+          </dl>
+
+          <div className="mt-5 flex gap-2">
+            {isMine ? (
+              <Button variant="quiet" onClick={() => void logout()}>
+                로그아웃
+              </Button>
+            ) : me ? (
+              /* 팔로워 수는 버튼을 누른 그 자리에서 함께 움직인다. 다시 불러오지 않는다. */
+              <FollowButton
+                handle={profile.handle}
+                following={profile.isFollowing}
+                onChanged={(now) =>
+                  setProfile((prev) =>
+                    prev
+                      ? { ...prev, isFollowing: now, followerCount: prev.followerCount + (now ? 1 : -1) }
+                      : prev,
+                  )
+                }
+              />
+            ) : null}
+          </div>
         </div>
       </header>
 
