@@ -5,6 +5,7 @@ import { ApiError, api } from "@/lib/api";
 import type { LibraryItem, Reading, ReadingStatus } from "@/lib/types";
 import { READING_STATUS_LABEL } from "@/lib/types";
 import { Button, Cover } from "./ui";
+import PostComposer from "./PostComposer";
 
 const STATUSES: ReadingStatus[] = [
   "WANT_TO_READ",
@@ -48,7 +49,7 @@ export default function ReadingSheet({
     function keydown(event: KeyboardEvent) {
       if (event.key === "Escape") { event.preventDefault(); onClose(); }
       if (event.key !== "Tab") return;
-      const elements = panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), a[href], [tabindex="0"]');
+      const elements = panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), textarea:not(:disabled), a[href], [tabindex="0"]');
       if (!elements?.length) return;
       const first = elements[0], last = elements[elements.length - 1];
       if (event.shiftKey && (document.activeElement === first || document.activeElement === panel.current)) { event.preventDefault(); last.focus(); }
@@ -213,6 +214,8 @@ export default function ReadingSheet({
               })}
             </div>
           </div>
+
+          <PostComposer book={book} currentPage={reading.currentPage} />
 
           {error ? (
             <p className="mt-5 rounded-lg bg-danger/10 px-4 py-3 text-callout text-danger">
