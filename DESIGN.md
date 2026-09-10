@@ -1,23 +1,30 @@
 # 12books Design System
 
 ## Direction
-A quiet social reading room: warm paper, forest green ink, clean sans-serif typography, generous whitespace. Books and thoughts lead; numbers stay secondary.
+A modern reading app with clear navigation, compact hierarchy and purposeful whitespace. White surfaces and a restrained green accent. No serif type, oversized slogans, invented reader feeds or fabricated engagement.
 
-## Tokens
-- Canvas #f7f5f0; paper #fffefa; ink #292d27; muted #73766c.
-- Accent #365846; hover #284735; dividers #e4e4d9.
-- All typography: Wanted Sans Variable with system sans-serif fallback. Headings use 600 weight and tight tracking; body remains regular. Avoid serif fonts.
-- Type: 34 / 28 / 21 / 16 / 14 / 13 / 12px. Reading prose line height: 1.8–1.95.
-- Spacing: 4px base; 24–40px between groups. Content maximum 1120px.
-- Radius: covers 3px, controls 6px, panels 10px, dialogs 16px. Shadows mainly on books.
-- Intentionally light paper palette in both OS themes. Respect reduced motion.
+## Typography and color
+- Wanted Sans Variable, with native Korean sans-serif fallbacks.
+- Page titles 26px / 650, mobile 23px. Section titles 16–18px / 650. Body 14–15px with 1.6–1.7 line height; metadata 12–13px.
+- Canvas #fafbf9; surface #ffffff; ink #202a25; muted #727c75; borders #e8ece7.
+- Accent #35735a, hover #285c47. Pastels are reserved for search topic illustrations.
 
-## Screens
-- Home: current reading for members, clearly labeled fictional reading examples for visitors.
-- Discover: book search with editorial introduction and empty state.
-- Library/profile: cover exhibition, quiet filters, identity before statistics.
-- Authentication: split editorial layout on desktop; focused form on mobile.
-- Reading sheet: optional ratings, low-pressure progress language.
+## Layout
+- Sidebar 224px, tablet rail 80px, mobile bottom navigation and 60px header.
+- Main content max 1160px including 40px gutters. Primary content plus 240px context rail; single column below 960px.
+- Cards 12px radius, controls 8px, book covers 4px. Buttons 36–44px high.
+- Library uses a responsive 4/3/2-column grid, title/author/status beneath each book.
+- Reduced motion is respected; focus indicators and keyboard-operable dialogs are required.
 
-## Constraints
-Existing backend supports authentication, book search, library and progress. Social posts, follows, likes and comments are not connected. Do not represent example content as real activity. Example book designs are typographic treatments, not publisher cover art.
+## Product behavior
+- Search renders before sign-in, requests authentication when a visitor starts searching. Results come from the existing authenticated book-search API.
+- Topic buttons are fixed search keywords, NOT a genre API or a curated list of books. Their label must explain keyword search.
+- Recent searches stay in sessionStorage, are removable, and are optional.
+- Book illustrations are decorative geometric art, not real book covers or user records.
+- Home: visitors see a short product introduction; members see current reading with direct page editing.
+- Library: status filters, loaded-book count, cover grid, loading/error/retry/empty states.
+- Profile: identity and book grid, with no invented followers or global statistics from partial pagination.
+- Social posts, likes, comments and follows are not implemented; never present fictional content as live activity.
+
+## Validation
+Lint, TypeScript and production build. Browser checks at desktop and mobile sizes. Authenticated UI flows can be checked with isolated in-browser fixtures; this does not verify a live backend and fixtures must never enter application code or the database.
