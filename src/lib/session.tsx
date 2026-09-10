@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { api, getAccessToken, reissue, setAccessToken } from "./api";
+import { clearAllHistory } from "./searchHistory";
 
 type Me = { userId: number; handle: string };
 
@@ -98,6 +99,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setAccessToken(null);
       setMe(null);
+      // 브라우저에 남는 것까지 치운다 — 최근 검색어는 무엇에 관심이 있는지 그대로 드러낸다.
+      clearAllHistory();
       router.replace("/");
     }
   }, [router]);
