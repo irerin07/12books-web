@@ -55,12 +55,16 @@ button:not(:disabled),a {cursor:pointer;}
  .avatar {display:grid;place-items:center;flex-shrink:0;width:34px;height:34px;border-radius:50%;background:#edf1e8;color:var(--color-accent);font-weight:600;}
  .app-body {margin-left:224px;}
  .topbar {height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;border-bottom:1px solid var(--color-line);background:white;}
- .page-container {max-width:1160px;margin:auto;padding:36px 40px 64px;}
+/*
+  본문 폭은 화면마다 다르면 안 된다. 탭을 옮길 때 글이 좌우로 튀면 그 자체가 고장으로 보인다.
+  680px(= 760 - 좌우 여백 80)은 감상평이 한 줄에 들어가기 좋은 폭이고, 표지 격자도 네 칸까지
+  무리 없이 들어간다. 폭을 정하는 곳은 여기 한 곳뿐이다.
+*/
+ .page-container {max-width:760px;margin:auto;padding:36px 40px 64px;}
  .mobile-header,.mobile-nav {display:none;}
  .page-heading {margin-bottom:28px;display:flex;justify-content:space-between;align-items:center;gap:16px;}
  .page-heading h1 {font-size:26px;font-weight:650;line-height:1.4;}
-/* 본문은 한 칸이다. 읽는 글이 흐르는 폭은 화면 너비가 아니라 눈이 정한다. */
- .content-columns {max-width:680px;margin-inline:auto;}
+ .content-columns {min-width:0;}
  .panel {background:white;border:1px solid var(--color-line);border-radius:12px;}
  .search-box {display:flex;align-items:center;gap:12px;background:white;border:1.5px solid #bacbc0;border-radius:12px;padding:7px 8px 7px 17px;box-shadow:0 3px 12px #2b4b3505;}
  .search-box:focus-within {border-color:var(--color-accent);box-shadow:0 0 0 3px #35735a0c;}
