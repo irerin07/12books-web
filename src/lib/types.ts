@@ -1,4 +1,13 @@
-/** 백엔드 응답 모양. 서버의 DTO와 1:1로 맞춘다. */
+/**
+ * 백엔드 응답 모양. 서버의 DTO와 1:1로 맞춘다.
+ *
+ * `?`와 `| null`을 구분해서 쓴다. 서버가 @JsonInclude(NON_NULL)을 붙인 DTO는 값이 없으면
+ * 필드를 통째로 빼고 보내므로 `?`(undefined)이고, 붙이지 않은 DTO는 `null`이 그대로 온다.
+ * 둘을 뭉뚱그리면 `=== null` 같은 비교가 조용히 빗나간다.
+ *
+ * NON_NULL이 붙은 것: Book · Reading · Post · UserSummary · FollowItem
+ * 붙지 않은 것: Profile · BookSearchResult
+ */
 
 export type ReadingStatus =
   | "WANT_TO_READ"
@@ -35,7 +44,7 @@ export type Profile = {
 export type FollowItem = {
   handle: string;
   displayName: string;
-  avatarUrl: string | null;
+  avatarUrl?: string;
   isFollowing: boolean;
 };
 
@@ -66,23 +75,25 @@ export type BookSearchPage = {
 
 export type Book = {
   id: number;
-  isbn13: string | null;
+  isbn13?: string;
   title: string;
   authors: string;
-  publisher: string | null;
-  thumbnailUrl: string | null;
-  publishedAt: string | null;
+  publisher?: string;
+  thumbnailUrl?: string;
+  /** 2017-05-10 모양. 모르면 아예 오지 않는다. */
+  publishedAt?: string;
 };
 
 export type Reading = {
   id: number;
   bookId: number;
   status: ReadingStatus;
+  /** 0은 "아직 안 읽음"이다. 모르는 값이 아니라 진짜 0이라 항상 실려 온다. */
   currentPage: number;
-  pageCount: number | null;
-  startedAt: string | null;
-  finishedAt: string | null;
-  rating: number | null;
+  pageCount?: number;
+  startedAt?: string;
+  finishedAt?: string;
+  rating?: number;
 };
 
 export type LibraryItem = {
@@ -115,7 +126,7 @@ export type ApiErrorBody = {
 export type UserSummary = {
   handle: string;
   displayName: string;
-  avatarUrl: string | null;
+  avatarUrl?: string;
 };
 
 /**
@@ -128,10 +139,10 @@ export type Post = {
   id: number;
   author: UserSummary;
   book: Book;
-  readingId: number | null;
+  readingId?: number;
   content: string;
-  fromPage: number | null;
-  toPage: number | null;
+  fromPage?: number;
+  toPage?: number;
   spoiler: boolean;
   likeCount: number;
   commentCount: number;
