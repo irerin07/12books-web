@@ -9,7 +9,7 @@ import LibraryGrid from "@/components/LibraryGrid";
 import ReadingSheet from "@/components/ReadingSheet";
 import { Button, Empty, LinkButton, Spinner } from "@/components/ui";
 import Icon from "@/components/Icon";
-import BookArt from "@/components/BookArt";
+
 
 const FILTERS: {value:ReadingStatus|"";label:string}[] = [{value:"",label:"전체"},{value:"READING",label:"읽는 중"},{value:"WANT_TO_READ",label:"읽고 싶은"},{value:"FINISHED",label:"읽은 책"},{value:"PAUSED",label:"잠시 멈춘"},{value:"DROPPED",label:"그만 읽은"}];
 type Shelf = CursorPage<LibraryItem> & {key:string; error?:string};
@@ -45,7 +45,7 @@ export default function LibraryPage() {
   const current=shelf?.key===key?shelf:null;
   return <>
     <header className="page-heading"><div><h1>내 서재</h1></div><LinkButton href={me?"/search":"/signup"}><Icon name="plus" className="mr-1.5 h-4 w-4" />{me?"책 담기":"시작하기"}</LinkButton></header>
-    {!me ? <><section className="welcome-banner"><div><h2 className="text-title font-semibold">아직 비어 있는, 나만의 서재</h2><p className="mt-3">책 한 권을 담는 것부터 시작해 보세요.<br />읽는 중 · 읽고 싶은 · 읽은 책으로 정리할 수 있어요.</p><Link href="/login" className="mt-5 inline-flex items-center gap-2 text-callout font-semibold text-accent">로그인하고 서재 만들기<Icon name="arrow" className="h-4 w-4" /></Link></div><BookArt /></section><div className="mt-6 grid gap-4 sm:grid-cols-3">{[{name:"읽고 싶은 책",icon:"plus" as const,text:"다음에 읽을 책을 미리 담아 두세요."},{name:"읽는 중인 책",icon:"book" as const,text:"현재 페이지를 기록하며 이어 읽으세요."},{name:"다 읽은 책",icon:"check" as const,text:"함께한 책들이 나만의 서재가 됩니다."}].map(step=><div key={step.name} className="panel p-5"><Icon name={step.icon} className="mb-4 h-5 w-5 text-accent" /><h3 className="text-headline">{step.name}</h3><p className="mt-2 text-foot text-muted">{step.text}</p></div>)}</div></> : <>
+    {!me ? <><section className="library-intro"><div><h2 className="text-title font-semibold">아직 비어 있는, 나만의 서재</h2><p className="mt-3">책 한 권을 담는 것부터 시작해 보세요.<br />읽는 중 · 읽고 싶은 · 읽은 책으로 정리할 수 있어요.</p><Link href="/login" className="mt-5 inline-flex items-center gap-2 text-callout font-semibold text-accent">로그인하고 서재 만들기<Icon name="arrow" className="h-4 w-4" /></Link></div></section><div className="mt-6 grid gap-4 sm:grid-cols-3">{[{name:"읽고 싶은 책",icon:"plus" as const,text:"다음에 읽을 책을 미리 담아 두세요."},{name:"읽는 중인 책",icon:"book" as const,text:"현재 페이지를 기록하며 이어 읽으세요."},{name:"다 읽은 책",icon:"check" as const,text:"함께한 책들이 나만의 서재가 됩니다."}].map(step=><div key={step.name} className="panel p-5"><Icon name={step.icon} className="mb-4 h-5 w-5 text-accent" /><h3 className="text-headline">{step.name}</h3><p className="mt-2 text-foot text-muted">{step.text}</p></div>)}</div></> : <>
       <div className="mb-6 overflow-x-auto"><div className="segmented min-w-max">{FILTERS.map(filter=><button key={filter.value} data-on={status===filter.value} aria-pressed={status===filter.value} onClick={()=>setStatus(filter.value)} className="segmented-item shrink-0 text-callout font-medium">{filter.label}</button>)}</div></div>
       {current && <div className="mb-5 flex items-center justify-between text-cap text-muted"><span>{current.items.length}{current.hasNext?"+":""}권</span></div>}
       {current?.error && <div role="alert" className="mb-5 flex items-center justify-between gap-3 rounded-lg bg-danger/5 p-4 text-foot text-danger">{current.error}<button onClick={()=>setAttempt(a=>a+1)} className="shrink-0 underline">다시 시도</button></div>}

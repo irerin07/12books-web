@@ -3,22 +3,25 @@ import Link from "next/link";
 import { useSession } from "@/lib/session";
 import { Empty, LinkButton } from "@/components/ui";
 import Icon from "@/components/Icon";
-import BookArt from "@/components/BookArt";
+
 import FeedHeader from "@/components/FeedHeader";
 import Feed from "@/components/Feed";
 
 export default function HomePage() {
   const { me } = useSession();
-  if (!me) return <div className="content-columns"><div className="min-w-0">
-    <section className="welcome-banner"><div><span className="mb-3 inline-block text-cap font-semibold text-accent">나의 독서 생활, 12books</span><h1>읽고 있는 책과<br />조금 더 가까이.</h1><p className="mt-4">읽고 싶은 책을 모으고,<br />오늘 읽은 페이지를 남겨 보세요.</p><Link href="/signup" className="mt-6 inline-flex items-center gap-4 rounded-lg bg-accent px-5 py-3 text-callout font-semibold text-white">내 서재 시작하기<Icon name="arrow" className="h-4 w-4" /></Link></div><BookArt /></section>
-    <section className="mt-8"><div className="section-heading"><h2>한 권으로 시작하는 독서 기록</h2><Link href="/search" className="text-foot text-accent">책 찾아보기 →</Link></div>{[{title:"읽고 싶은 책을 발견하세요",text:"제목, 작가, 관심 있는 분야로 책을 찾을 수 있어요."},{title:"지금 읽는 책을 서재에 놓으세요",text:"읽고 싶은 책부터 다 읽은 책까지, 상태별로 정리해요."},{title:"오늘 읽은 페이지를 남기세요",text:"완독을 기다릴 필요 없이, 지금 읽은 만큼 기록하세요."}].map((step,i)=><div className="step-row" key={step.title}><span className="step-number">{i+1}</span><div><h3 className="text-headline">{step.title}</h3><p className="mt-1.5 text-foot text-muted">{step.text}</p></div></div>)}</section>
-    {/*
-      탐색 피드도 인증이 필요하다(SecurityConfig는 /auth/**만 연다). 그래서 손님에게는
-      남의 감상평을 보여줄 수 없고, 대신 무엇이 기다리는지만 말한다 — 지어낸 예시를 놓으면
-      가입한 순간 방금 본 글들이 사라진다.
-    */}
-    <div className="mt-7 flex items-center gap-3 rounded-lg bg-fill px-4 py-3"><Icon name="book" className="h-4 w-4 shrink-0 text-accent" /><p className="text-foot text-muted">가입하면 다른 사람들의 감상평을 읽고, 마음에 드는 사람을 팔로우할 수 있어요.</p></div>
-  </div></div>;
+  if (!me) return <div className="guest-home">
+    <header className="guest-top"><span>책을 읽는 사람들의 공간</span><Link href="/login">로그인 <Icon name="arrow" className="h-4 w-4" /></Link></header>
+    <section className="guest-intro">
+      <p className="guest-eyebrow">읽는 사이, 남는 생각.</p>
+      <h1>다 읽지 않아도,<br />이야기는 시작됩니다.</h1>
+      <p className="guest-description">오늘 읽은 몇 페이지, 마음에 남은 두세 문장.<br />책을 읽는 순간을 기록하고, 다른 독자와 나누세요.</p>
+      <div className="guest-actions"><LinkButton href="/signup">12books 시작하기</LinkButton><Link href="/search">책 둘러보기 <Icon name="arrow" className="h-4 w-4" /></Link></div>
+    </section>
+    <section className="guest-features" aria-label="12books에서 할 수 있는 일">
+      {[{title:"읽은 만큼 기록하기",text:"47쪽부터 92쪽까지. 완독을 기다리지 않고 지금의 감상을 남겨요."},{title:"책으로 연결되기",text:"같은 책을 읽는 사람을 발견하고, 마음에 드는 독자를 팔로우해요."},{title:"취향이 쌓이는 서재",text:"읽고 싶은 책과 읽어 온 책을 모아 나만의 서재를 만들어요."}].map((item,i)=><div key={item.title}><span className="guest-index">0{i+1}</span><h2>{item.title}</h2><p>{item.text}</p></div>)}
+    </section>
+    <footer className="guest-footer">한 페이지부터, 나의 속도로.</footer>
+  </div>;
   return <>
     <div className="content-columns">
       <FeedHeader active="home" />

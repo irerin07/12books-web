@@ -69,7 +69,7 @@ export default function ProfileEditSheet({
     <button aria-label="닫기" onClick={onClose} className="absolute inset-0 animate-[fade-in_0.25s_ease] bg-black/40 backdrop-blur-[2px]" />
 
     <div ref={panel} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId}
-      className="relative max-h-[92dvh] w-full animate-[sheet-in_0.4s_var(--ease-spring)] overflow-y-auto rounded-t-3xl bg-surface pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-sheet outline-none sm:max-w-[440px] sm:rounded-3xl sm:pb-6">
+      className="relative max-h-[92dvh] w-full animate-[sheet-in_0.4s_var(--ease-spring)] overflow-y-auto rounded-t-xl bg-surface pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-sheet outline-none sm:max-w-[440px] sm:rounded-xl sm:pb-6">
       <div className="sticky top-0 z-10 flex justify-center bg-surface pb-1 pt-2.5 sm:hidden">
         <span className="h-[5px] w-9 rounded-full bg-fill-strong" />
       </div>

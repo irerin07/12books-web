@@ -97,7 +97,7 @@ export default function ReadingSheet({
         className="absolute inset-0 animate-[fade-in_0.25s_ease] bg-black/40 backdrop-blur-[2px]"
       />
 
-      <div ref={panel} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} className="relative max-h-[92dvh] w-full animate-[sheet-in_0.4s_var(--ease-spring)] overflow-y-auto rounded-t-3xl bg-surface pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-sheet outline-none sm:max-w-[440px] sm:rounded-3xl sm:pb-6">
+      <div ref={panel} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} className="relative max-h-[92dvh] w-full animate-[sheet-in_0.4s_var(--ease-spring)] overflow-y-auto rounded-t-xl bg-surface pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-sheet outline-none sm:max-w-[440px] sm:rounded-xl sm:pb-6">
         {/* 손잡이. 끌어내릴 수 있다는 신호는 이것 하나면 충분하다. */}
         <div className="sticky top-0 z-10 flex justify-center bg-surface pb-1 pt-2.5 sm:hidden">
           <span className="h-[5px] w-9 rounded-full bg-fill-strong" />
@@ -129,9 +129,9 @@ export default function ReadingSheet({
                     disabled={busy}
                     aria-pressed={on}
                     onClick={() => void patch({ status: s })}
-                    className={`press rounded-full px-3.5 py-2 text-callout disabled:opacity-50 ${
+                    className={`press rounded-md border border-line px-3.5 py-2 text-callout disabled:opacity-50 ${
                       on
-                        ? "bg-accent font-medium text-white"
+                        ? "bg-ink font-medium text-white"
                         : "bg-fill text-muted hover:text-ink"
                     }`}
                   >

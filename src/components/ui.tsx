@@ -24,8 +24,8 @@ export function Field({label,error,...props}:React.InputHTMLAttributes<HTMLInput
  */
 export function Cover({src,title,className="",radius="rounded-md",priority=false}:{src?:string|null;title:string;className?:string;radius?:string;priority?:boolean}) {
   const [failedSrc,setFailedSrc]=useState<string|null|undefined>(null);
-  return <div className={`relative aspect-[2/3] overflow-hidden bg-[#e6eade] shadow-raise ${radius} ${className}`}>
-    {src&&failedSrc!==src ? <Image src={src} alt="" fill priority={priority} sizes="(max-width:768px) 25vw, 160px" className="object-cover" onError={()=>setFailedSrc(src)} /> : <div className="absolute inset-0 flex flex-col justify-between border-l-[5px] border-black/10 px-3 py-4"><span className="line-clamp-4 text-[12px] font-semibold leading-relaxed text-[#59634e]">{title}</span><Icon name="book" className="h-4 w-4 text-[#859279]" /></div>}
+  return <div className={`relative aspect-[2/3] overflow-hidden bg-fill-strong shadow-raise ${radius} ${className}`}>
+    {src&&failedSrc!==src ? <Image src={src} alt="" fill priority={priority} sizes="(max-width:768px) 25vw, 160px" className="object-cover" onError={()=>setFailedSrc(src)} /> : <div className="absolute inset-0 flex flex-col justify-between border-l-[5px] border-black/10 px-3 py-4"><span className="line-clamp-4 text-[12px] font-semibold leading-relaxed text-muted">{title}</span><Icon name="book" className="h-4 w-4 text-faint" /></div>}
     <span className={`pointer-events-none absolute inset-0 inset-hairline ${radius}`} />
   </div>;
 }
