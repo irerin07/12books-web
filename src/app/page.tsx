@@ -20,16 +20,19 @@ export default function HomePage() {
     <div className="mt-7 flex items-center gap-3 rounded-lg bg-fill px-4 py-3"><Icon name="book" className="h-4 w-4 shrink-0 text-accent" /><p className="text-foot text-muted">가입하면 다른 사람들의 감상평을 읽고, 마음에 드는 사람을 팔로우할 수 있어요.</p></div>
   </div><ContextRail /></div>;
   return <>
-    <header className="page-heading"><div><h1>타임라인</h1><p>내가 남긴 기록과, 팔로우한 사람들의 감상평.</p></div><LinkButton href="/library"><Icon name="pen" className="mr-1.5 h-4 w-4" />기록 남기기</LinkButton></header>
+    <header className="page-heading"><div><h1>홈</h1><p>팔로우한 사람들의 감상평과, 아직 모르는 사람들의 기록.</p></div><LinkButton href="/library"><Icon name="pen" className="mr-1.5 h-4 w-4" />기록 남기기</LinkButton></header>
     <div className="content-columns"><div className="min-w-0">
       {/*
-        홈은 피드 하나만 한다. 읽는 책은 서재로, 전체 최신은 탐색으로 갔다 —
-        성격이 다른 것을 한 화면에 쌓으면 어느 것도 제대로 읽히지 않는다.
+        홈은 피드 하나만 한다. 읽는 책은 서재로 갔다 — 성격이 다른 것을 한 화면에 쌓으면
+        어느 것도 제대로 읽히지 않는다.
+
+        서버가 팔로잉 글과 아닌 글을 섞어 주므로 팔로우가 0명이어도 비지 않는다.
+        다만 내 글은 여기 없다. 내가 쓴 것은 내 프로필에서 본다.
       */}
-      <Feed key="timeline" path="/api/v1/feed" empty={<Empty
-        title="타임라인이 비어 있어요"
-        hint="내가 남긴 감상평과, 팔로우한 사람들의 감상평이 여기로 흘러옵니다."
-        action={<LinkButton href="/explore">사람들 둘러보기</LinkButton>} />} />
+      <Feed key="home" path="/api/v1/feed" empty={<Empty
+        title="아직 남겨진 감상평이 없어요"
+        hint="첫 기록을 남기는 사람이 되어 보세요."
+        action={<LinkButton href="/library">기록 남기기</LinkButton>} />} />
     </div><ContextRail /></div>
   </>;
 }

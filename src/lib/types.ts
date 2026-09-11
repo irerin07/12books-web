@@ -136,4 +136,12 @@ export type Post = {
   likeCount: number;
   commentCount: number;
   createdAt: string;
+  /**
+   * 보는 사람이 이 글의 작성자를 팔로우 중인지. 홈 피드에만 실린다.
+   *
+   * 없을 수 있다(`?`)는 것이 핵심이다. 책별·사람별 목록에서는 서버가 이 관계를 계산하지
+   * 않아 응답에서 아예 빠진다 — 그 자리에서 undefined를 false로 읽으면 "팔로우 안 한 사람"
+   * 이라고 잘못 말하게 된다.
+   */
+  followingAuthor?: boolean;
 };
