@@ -41,7 +41,15 @@ export default function PostCard({ post }: { post: Post }) {
           : post.author.displayName.slice(0, 1)}
       </Link>
       <div className="min-w-0 flex-1">
-        <Link href={`/u/${post.author.handle}`} className="text-foot font-semibold">{post.author.displayName}</Link>
+        <div className="flex items-center gap-2">
+          <Link href={`/u/${post.author.handle}`} className="truncate text-foot font-semibold">{post.author.displayName}</Link>
+          {/*
+            홈은 팔로잉 글과 아닌 글을 섞어 준다. 표시가 없으면 이 글이 왜 보이는지 알 수 없다.
+            === false로 보는 것이 중요하다 — 책별·사람별 목록에서는 서버가 이 관계를 계산하지
+            않아 값이 아예 빠지는데, undefined를 거짓으로 읽으면 모든 글에 "추천"이 붙는다.
+          */}
+          {post.followingAuthor === false && <span className="status-tag">추천</span>}
+        </div>
         <p className="text-cap text-faint">@{post.author.handle} · {since(post.createdAt)}</p>
       </div>
     </header>
