@@ -12,6 +12,7 @@ export default function Nav() {
   const { me } = useSession();
   const items = [
     { href: "/", label: "홈", icon: "home" as const, active: pathname === "/" },
+    { href: "/explore", label: "탐색", icon: "compass" as const, active: pathname === "/explore" },
     { href: "/search", label: "책 발견", icon: "search" as const, active: pathname === "/search" },
     { href: "/library", label: "내 서재", icon: "books" as const, active: pathname === "/library" },
     { href: me ? `/u/${me.handle}` : "/login", label: "프로필", icon: "user" as const, active: pathname.startsWith("/u/") },
