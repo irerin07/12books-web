@@ -9,6 +9,8 @@ import LibraryGrid from "@/components/LibraryGrid";
 import ReadingSheet from "@/components/ReadingSheet";
 import { Button, Empty, Spinner } from "@/components/ui";
 import FollowButton from "@/components/FollowButton";
+import Feed from "@/components/Feed";
+import { LinkButton } from "@/components/ui";
 
 /**
  * 프로필. 인스타의 프로필과 같은 골격이다 — 아바타, 숫자 몇 개, 소개, 그리고 격자.
@@ -28,6 +30,11 @@ export default function ProfilePage({
   const [selected, setSelected] = useState<LibraryItem | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(true);
+  /*
+   * 서재와 감상평을 한 화면에 쌓지 않고 나눈다. 둘 다 길어지는 목록이라 이어 붙이면
+   * 아래쪽은 아무도 닿지 않는다. 인스타 프로필의 격자 전환과 같은 자리다.
+   */
+  const [tab, setTab] = useState<"library" | "posts">("library");
 
   const fetchPage = useCallback(
     async (next: number | null) => {
@@ -146,23 +153,49 @@ export default function ProfilePage({
         </div>
       </header>
 
-      <div className="mt-8"><div className="section-heading"><h2>서재</h2><span className="text-cap text-muted">{items.length}{hasNext ? "+" : ""}권</span></div>
-        {items.length === 0 && !busy ? (
-          <Empty title="아직 서재가 비어 있습니다" />
-        ) : (
-          <LibraryGrid items={items} onSelect={isMine ? setSelected : undefined} />
-        )}
-      </div>
+      <div className="mt-8 overflow-x-auto"><div className="segmented min-w-max">
+        {([["library", "서재"], ["posts", "감상평"]] as const).map(([value, label]) => (
+          <button key={value} data-on={tab === value} aria-pressed={tab === value}
+            onClick={() => setTab(value)} className="segmented-item shrink-0 text-callout font-medium">
+            {label}
+          </button>
+        ))}
+      </div></div>
 
-      {busy ? <Spinner /> : null}
+      {tab === "library" ? (
+        <div className="mt-6"><div className="section-heading"><h2>서재</h2><span className="text-cap text-muted">{items.length}{hasNext ? "+" : ""}권</span></div>
+          {items.length === 0 && !busy ? (
+            <Empty title={isMine ? "아직 서재가 비어 있어요" : "아직 담은 책이 없어요"} hint={isMine ? "검색에서 책을 찾아 담아 보세요." : undefined} action={isMine ? <LinkButton href="/search">책 찾기</LinkButton> : undefined} />
+          ) : (
+            <LibraryGrid items={items} onSelect={isMine ? setSelected : undefined} />
+          )}
 
-      {hasNext && !busy ? (
-        <div className="flex justify-center py-8">
-          <Button variant="quiet" onClick={() => void loadMore()}>
-            더 보기
-          </Button>
+          {busy ? <Spinner /> : null}
+
+          {hasNext && !busy ? (
+            <div className="flex justify-center py-8">
+              <Button variant="quiet" onClick={() => void loadMore()}>
+                더 보기
+              </Button>
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      ) : (
+        /*
+          이 목록에는 followingAuthor가 실리지 않는다. 서버가 사람별 목록에서는 그 관계를
+          계산하지 않기 때문이고, PostCard도 값이 없으면 "추천"을 붙이지 않는다.
+
+          내 프로필에서 부르면 "내 글만 보기"가 된다 — 홈과 팔로잉이 본인 글을 빼므로
+          지금은 내가 쓴 것을 볼 수 있는 유일한 자리다.
+        */
+        <div className="mt-6">
+          <Feed key={`posts:${handle}`} path={`/api/v1/users/${handle}/posts`} empty={
+            <Empty title="아직 남긴 감상평이 없어요"
+              hint={isMine ? "읽던 책의 시트에서 지금 생각을 남겨 보세요." : "이 사람이 감상평을 남기면 여기에 쌓입니다."}
+              action={isMine ? <LinkButton href="/library">기록 남기기</LinkButton> : undefined} />
+          } />
+        </div>
+      )}
 
       {selected ? (
         <ReadingSheet
