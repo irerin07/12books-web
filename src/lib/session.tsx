@@ -18,7 +18,8 @@ type Session = {
   me: Me | null;
   /** 첫 재발급 시도가 끝나기 전에는 "로그인 안 됨"과 구분해야 한다. */
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  /** 방금 들어온 사람을 돌려준다. 상태는 다음 렌더에야 바뀌어서, 부른 쪽이 바로 쓸 수 없다. */
+  login: (email: string, password: string) => Promise<Me>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -80,7 +81,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       anonymous: true,
     });
     setAccessToken(body.accessToken);
-    setMe(readMe(body.accessToken));
+    const who = readMe(body.accessToken);
+    setMe(who);
+    if (!who) throw new Error("토큰에서 사용자를 읽지 못했습니다.");
+    return who;
   }, []);
 
   /**
