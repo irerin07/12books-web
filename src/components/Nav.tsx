@@ -11,9 +11,13 @@ export default function Nav() {
   const pathname = usePathname();
   const { me } = useSession();
   const items = [
-    { href: "/", label: "홈", icon: "home" as const, active: pathname === "/" },
-    { href: "/following", label: "팔로잉", icon: "users" as const, active: pathname === "/following" },
-    { href: "/search", label: "책 발견", icon: "search" as const, active: pathname === "/search" },
+    /*
+     * 팔로잉은 메뉴가 아니라 홈 안의 탭이다. 홈에서 "추천 / 팔로잉"을 오갈 수 있는데
+     * 사이드바에 같은 목적지를 또 두면, 같은 곳으로 가는 길이 둘이라 어느 쪽이 지금 자리인지
+     * 흐려진다. 그래서 두 경로 모두에서 "홈"이 지금 자리로 켜진다.
+     */
+    { href: "/", label: "홈", icon: "home" as const, active: pathname === "/" || pathname === "/following" },
+    { href: "/search", label: "검색", icon: "search" as const, active: pathname === "/search" },
     { href: "/library", label: "내 서재", icon: "books" as const, active: pathname === "/library" },
     { href: me ? `/u/${me.handle}` : "/login", label: "프로필", icon: "user" as const, active: pathname.startsWith("/u/") },
   ];
