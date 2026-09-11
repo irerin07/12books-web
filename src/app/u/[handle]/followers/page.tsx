@@ -8,8 +8,7 @@ export default function FollowersPage({ params }: { params: Promise<{ handle: st
   return <>
     <header className="page-heading"><div>
       <h1>팔로워</h1>
-      <p><Link href={`/u/${handle}`} className="text-accent">@{handle}</Link>님의 팔로워 목록</p>
-    </div></header>
+    </div><Link href={`/u/${handle}`} className="text-foot text-muted hover:text-accent">@{handle}</Link></header>
     <FollowList handle={handle} kind="followers" />
   </>;
 }

@@ -17,10 +17,7 @@ export default function FollowingPage() {
   const { me } = useSession();
 
   return <>
-    <header className="page-heading"><div>
-      <h1>팔로잉</h1>
-      <p>{me ? "내가 팔로우한 사람들이 남긴 감상평." : "팔로우한 사람들의 기록은 로그인한 뒤에 보입니다."}</p>
-    </div></header>
+    <header className="page-heading"><div><h1>팔로잉</h1></div></header>
     <div className="content-columns"><div className="min-w-0">
       {/* 감상평 조회에도 로그인이 필요하다(SecurityConfig는 /auth/**만 연다). */}
       {me

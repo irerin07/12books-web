@@ -20,7 +20,7 @@ export default function HomePage() {
     <div className="mt-7 flex items-center gap-3 rounded-lg bg-fill px-4 py-3"><Icon name="book" className="h-4 w-4 shrink-0 text-accent" /><p className="text-foot text-muted">가입하면 다른 사람들의 감상평을 읽고, 마음에 드는 사람을 팔로우할 수 있어요.</p></div>
   </div><ContextRail /></div>;
   return <>
-    <header className="page-heading"><div><h1>홈</h1><p>팔로우한 사람들의 감상평과, 아직 모르는 사람들의 기록.</p></div><LinkButton href="/library"><Icon name="pen" className="mr-1.5 h-4 w-4" />기록 남기기</LinkButton></header>
+    <header className="page-heading"><div><h1>홈</h1></div><LinkButton href="/library"><Icon name="pen" className="mr-1.5 h-4 w-4" />기록 남기기</LinkButton></header>
     <div className="content-columns"><div className="min-w-0">
       {/*
         홈은 피드 하나만 한다. 읽는 책은 서재로 갔다 — 성격이 다른 것을 한 화면에 쌓으면
