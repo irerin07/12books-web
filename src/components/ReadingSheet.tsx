@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { ApiError, api } from "@/lib/api";
 import type { LibraryItem, Reading, ReadingStatus } from "@/lib/types";
 import { READING_STATUS_LABEL } from "@/lib/types";
+import Link from "next/link";
 import { Button, Cover } from "./ui";
 import PostComposer from "./PostComposer";
 
@@ -107,7 +108,8 @@ export default function ReadingSheet({
             <Cover src={book.thumbnailUrl} title={book.title} className="w-[78px] shrink-0" />
             <div className="min-w-0 pt-0.5">
               <h2 id={titleId} className="text-headline">
-                {book.title}
+                {/* 같은 책을 읽은 사람들이 무엇을 남겼는지로 건너가는 길 */}
+                <Link href={`/books/${book.id}`} className="hover:text-accent">{book.title}</Link>
               </h2>
               <p className="mt-1.5 text-callout text-muted">{book.authors}</p>
               {book.publisher ? (
