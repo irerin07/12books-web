@@ -3,10 +3,28 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ApiError } from "@/lib/api";
+import { ApiError, api } from "@/lib/api";
 import { useSession } from "@/lib/session";
+import type { Profile } from "@/lib/types";
 import AuthFrame from "@/components/AuthFrame";
 import { Button, Field, FieldGroup } from "@/components/ui";
+
+/**
+ * 로그인 직후 어디로 보낼지.
+ *
+ * 고른 사람들의 글이 있는 쪽이 기본이다. 다만 아무도 팔로우하지 않았다면 팔로잉은 비어 있고,
+ * 처음 들어온 사람에게 빈 화면을 보여주게 된다 — 그때는 발견이 사람을 만나는 자리다.
+ *
+ * 물어보는 데 실패하면 발견으로 보낸다. 목적지를 정하려다 로그인 자체를 막을 일은 아니다.
+ */
+async function landingFor(handle: string) {
+  try {
+    const me = await api<Profile>(`/api/v1/users/${handle}`);
+    return me.followingCount > 0 ? "/following" : "/";
+  } catch {
+    return "/";
+  }
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,8 +39,8 @@ export default function LoginPage() {
     setBusy(true);
     setError(null);
     try {
-      await login(email, password);
-      router.push("/");
+      const who = await login(email, password);
+      router.replace(await landingFor(who.handle));
     } catch (e) {
       // 서버는 이메일이 틀렸는지 비밀번호가 틀렸는지 구분해 주지 않는다. 그게 맞다 —
       // 구분해 주면 어느 이메일이 가입돼 있는지 알려주는 셈이 된다.
