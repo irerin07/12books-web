@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Brand } from "./Nav";
-import BookArt from "./BookArt";
 export default function AuthFrame({children}:{children:React.ReactNode}) {
-  return <div className="auth-layout"><aside className="auth-story"><Brand /><div><BookArt /><h2>책 한 권에서 시작하는<br />나의 독서 생활.</h2><p className="mt-4 text-callout leading-7 text-muted">읽고 싶은 책을 모으고,<br />오늘 읽은 페이지를 기록하세요.</p></div><p className="text-cap text-muted">© 12books</p></aside><div className="flex min-h-dvh items-center justify-center px-6 py-12"><div className="w-full max-w-[360px]"><Link href="/" className="mb-8 inline-block text-foot text-muted">← 홈으로</Link>{children}</div></div></div>;
+return <div className="auth-page"><header className="auth-header"><Brand /><Link href="/">홈으로 →</Link></header><main className="auth-main"><aside className="auth-intro"><p>읽는 사이, 남는 생각.</p><h2>책을 읽고,<br />나를 남기는 곳.</h2><p>오늘 읽은 페이지의 감상을 기록하고<br />당신의 취향과 닮은 독자를 만나세요.</p><div className="auth-note">한 페이지부터, 나의 속도로.</div></aside><div className="auth-form">{children}</div></main><footer className="auth-footer">© 12books</footer></div>;
 }

@@ -96,7 +96,7 @@ export default function ProfilePage({
   return (
     <div>
       {/* 인스타의 프로필 골격 — 아바타, 숫자 줄, 소개, 격자. 다만 담기는 것은 표지다. */}
-      <header className="panel flex items-center gap-5 p-6 sm:p-8">
+      <header className="profile-heading">
         <div className="h-[88px] w-[88px] shrink-0 overflow-hidden rounded-full bg-fill shadow-card ring-1 ring-line sm:h-[88px] sm:w-[88px]">
           {profile.avatarUrl ? (
             // 아바타는 어떤 주소든 올 수 있어 next/image의 허용 목록에 기대지 않는다
@@ -132,7 +132,7 @@ export default function ProfilePage({
             </Link>
           </dl>
 
-          <div className="mt-5 flex gap-2">
+          <div className="mt-5 flex flex-wrap gap-2">
             {isMine ? (
               <>
                 <Button variant="quiet" onClick={() => setEditing(true)}>
