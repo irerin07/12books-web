@@ -22,8 +22,8 @@ export function Field({label,error,...props}:React.InputHTMLAttributes<HTMLInput
  * priority는 화면을 열자마자 보이는 큰 표지에만 준다(책 페이지의 주인공 표지). 기본은 지연
  * 로드인데, 목록에서는 그게 맞지만 맨 위 한 장까지 미루면 제목만 먼저 뜨고 자리가 비어 있다.
  */
-export function Cover({src,title,className="",radius="rounded-md",priority=false}:{src:string|null;title:string;className?:string;radius?:string;priority?:boolean}) {
-  const [failedSrc,setFailedSrc]=useState<string|null>(null);
+export function Cover({src,title,className="",radius="rounded-md",priority=false}:{src?:string|null;title:string;className?:string;radius?:string;priority?:boolean}) {
+  const [failedSrc,setFailedSrc]=useState<string|null|undefined>(null);
   return <div className={`relative aspect-[2/3] overflow-hidden bg-[#e6eade] shadow-raise ${radius} ${className}`}>
     {src&&failedSrc!==src ? <Image src={src} alt="" fill priority={priority} sizes="(max-width:768px) 25vw, 160px" className="object-cover" onError={()=>setFailedSrc(src)} /> : <div className="absolute inset-0 flex flex-col justify-between border-l-[5px] border-black/10 px-3 py-4"><span className="line-clamp-4 text-[12px] font-semibold leading-relaxed text-[#59634e]">{title}</span><Icon name="book" className="h-4 w-4 text-[#859279]" /></div>}
     <span className={`pointer-events-none absolute inset-0 inset-hairline ${radius}`} />
