@@ -57,7 +57,7 @@ export default function PostCard({ post }: { post: Post }) {
     <div className="post-body">
       <Cover src={post.book.thumbnailUrl} title={post.book.title} className="w-[52px] shrink-0" />
       <div className="min-w-0 flex-1">
-        <h3 className="text-foot font-semibold">{post.book.title}</h3>
+        <Link href={`/books/${post.book.id}`} className="text-foot font-semibold hover:text-accent">{post.book.title}</Link>
         <p className="mt-0.5 text-cap text-muted">{post.book.authors}{pages ? ` · ${pages}` : ""}</p>
 
         {post.spoiler && !revealed
