@@ -101,7 +101,7 @@ function SearchContent({ term }: { term: string }) {
   }
   return <>
     <div className="content-columns">
-      <header className="page-heading"><div><h1>책 발견</h1></div></header>
+      <header className="page-heading"><div><h1>검색</h1></div></header>
       <div className="min-w-0">
       <form role="search" onSubmit={e => { e.preventDefault(); void search(query); }} className="search-box"><Icon name="search" className="h-5 w-5 shrink-0 text-accent" /><input ref={input} value={query} onChange={e => setQuery(e.target.value)} maxLength={100} aria-label="책 제목 또는 작가" placeholder="책 제목 또는 작가 검색" />{query && <button type="button" aria-label="검색어 지우기" onClick={() => { setQuery(""); input.current?.focus(); }} className="p-1 text-faint"><Icon name="close" className="h-4 w-4" /></button>}<Button type="submit" disabled={busy}>검색</Button></form>
       {needsLogin && <div role="status" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-white px-4 py-3"><p className="text-foot text-muted">책 검색은 로그인 후 이용할 수 있어요.</p><Link href="/login" className="text-foot font-semibold text-accent">로그인하기 →</Link></div>}
