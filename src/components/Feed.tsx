@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { useEffect, useRef, useState } from "react";
+import { ApiError, api } from "@/lib/api";
 import type { CursorPage, Post } from "@/lib/types";
 import { Button, Empty, Spinner } from "./ui";
 import PostCard from "./PostCard";
@@ -18,6 +18,30 @@ export default function Feed({ path, empty }: { path: string; empty: React.React
   const [hasNext, setHasNext] = useState(false);
   const [moreBusy, setMoreBusy] = useState(false);
   const [error, setError] = useState(false);
+  const [relationships, setRelationships] = useState<Record<string, boolean>>({});
+  const [pending, setPending] = useState<Record<string, boolean>>({});
+  const [followErrors, setFollowErrors] = useState<Record<string, string>>({});
+  const inFlight = useRef(new Set<string>());
+
+  async function follow(handle: string) {
+    if (inFlight.current.has(handle)) return;
+    inFlight.current.add(handle);
+    setPending(prev => ({ ...prev, [handle]: true }));
+    setFollowErrors(prev => ({ ...prev, [handle]: "" }));
+    try {
+      await api<void>(`/api/v1/users/${encodeURIComponent(handle)}/follow`, { method: "POST" });
+      setRelationships(prev => ({ ...prev, [handle]: true }));
+    } catch (e) {
+      if (e instanceof ApiError && e.code === "F002") {
+        setRelationships(prev => ({ ...prev, [handle]: true }));
+      } else {
+        setFollowErrors(prev => ({ ...prev, [handle]: "팔로우하지 못했어요. 다시 시도해 주세요." }));
+      }
+    } finally {
+      inFlight.current.delete(handle);
+      setPending(prev => ({ ...prev, [handle]: false }));
+    }
+  }
 
   /* path는 쓰는 곳마다 고정이라 여기서 상태를 되돌리지 않는다. 바뀔 일이 생기면
      부르는 쪽이 key={path}로 새로 세운다 — 검색 화면이 검색어에 쓰는 방식과 같다. */
@@ -44,7 +68,11 @@ export default function Feed({ path, empty }: { path: string; empty: React.React
   if (posts.length === 0) return <>{empty}</>;
 
   return <>
-    <div>{posts.map(post => <PostCard key={post.id} post={post} />)}</div>
+    <div>{posts.map(post => <PostCard key={post.id} post={post}
+      following={relationships[post.author.handle] ?? post.followingAuthor ?? (path === "/api/v1/feed/following" ? true : undefined)}
+      followBusy={pending[post.author.handle] ?? false}
+      followError={followErrors[post.author.handle]}
+      onFollow={() => void follow(post.author.handle)} />)}</div>
     {hasNext && <div className="mt-8 text-center">
       <Button variant="quiet" onClick={() => void loadMore()} disabled={moreBusy}>{moreBusy ? "불러오는 중" : "더 보기"}</Button>
     </div>}

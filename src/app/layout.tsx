@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 /** 모바일 브라우저의 상단 바까지 배경과 같은 색으로 만든다 — iOS에서 경계가 사라진다. */
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafbf9" },
-    { media: "(prefers-color-scheme: dark)", color: "#fafbf9" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#ffffff" },
   ],
 };
 
