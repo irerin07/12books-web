@@ -9,7 +9,6 @@ import type { Book, BookSearchPage, BookSearchResult, Reading } from "@/lib/type
 import { Button, Cover, Empty, Spinner } from "@/components/ui";
 import Icon from "@/components/Icon";
 import BookArt from "@/components/BookArt";
-import ContextRail from "@/components/ContextRail";
 
 const topics = [
   {title:"소설",description:"이야기 속으로",color:"#edf3e9"},
@@ -101,8 +100,9 @@ function SearchContent({ term }: { term: string }) {
     finally { setShelving(null); }
   }
   return <>
-    <header className="page-heading"><div><h1>책 발견</h1></div></header>
-    <div className="content-columns"><div className="min-w-0">
+    <div className="content-columns">
+      <header className="page-heading"><div><h1>책 발견</h1></div></header>
+      <div className="min-w-0">
       <form role="search" onSubmit={e => { e.preventDefault(); void search(query); }} className="search-box"><Icon name="search" className="h-5 w-5 shrink-0 text-accent" /><input ref={input} value={query} onChange={e => setQuery(e.target.value)} maxLength={100} aria-label="책 제목 또는 작가" placeholder="책 제목 또는 작가 검색" />{query && <button type="button" aria-label="검색어 지우기" onClick={() => { setQuery(""); input.current?.focus(); }} className="p-1 text-faint"><Icon name="close" className="h-4 w-4" /></button>}<Button type="submit" disabled={busy}>검색</Button></form>
       {needsLogin && <div role="status" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-white px-4 py-3"><p className="text-foot text-muted">책 검색은 로그인 후 이용할 수 있어요.</p><Link href="/login" className="text-foot font-semibold text-accent">로그인하기 →</Link></div>}
       {error && <div role="alert" className="mt-4 rounded-lg bg-danger/5 p-4 text-foot text-danger">{error}</div>}
@@ -112,6 +112,6 @@ function SearchContent({ term }: { term: string }) {
         <section className="mt-8"><div className="section-heading"><h2>주제 키워드로 검색</h2></div><div className="topic-grid">{topics.map((topic, i) => <button key={topic.title} onClick={() => void search(topic.title)} className="topic-card" style={{background:topic.color}}><div className="topic-copy"><strong>{topic.title}</strong><span>{topic.description}</span><Icon name="arrow" className="mt-5 h-4 w-4 text-muted" /></div><BookArt variant={i} /></button>)}</div></section>
         <section className="mt-8 border-t border-line pt-6"><div className="section-heading"><h2>관심 있는 주제로</h2></div><div className="flex flex-wrap gap-2">{["한국문학","철학","심리학","예술","여행","자연"].map(term => <button key={term} className="keyword" onClick={() => void search(term)}>{term}<Icon name="arrow" className="h-3 w-3" /></button>)}</div></section>
       </>}
-    </div><ContextRail /></div>
+    </div></div>
   </>;
 }

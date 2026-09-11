@@ -2,7 +2,6 @@
 import { useSession } from "@/lib/session";
 import { Empty, LinkButton } from "@/components/ui";
 import Feed from "@/components/Feed";
-import ContextRail from "@/components/ContextRail";
 
 /**
  * 팔로잉. 내가 고른 사람들의 글만 흐른다.
@@ -17,8 +16,9 @@ export default function FollowingPage() {
   const { me } = useSession();
 
   return <>
-    <header className="page-heading"><div><h1>팔로잉</h1></div></header>
-    <div className="content-columns"><div className="min-w-0">
+    <div className="content-columns">
+      <header className="page-heading"><div><h1>팔로잉</h1></div></header>
+      <div className="min-w-0">
       {/* 감상평 조회에도 로그인이 필요하다(SecurityConfig는 /auth/**만 연다). */}
       {me
         ? <Feed key="following" path="/api/v1/feed/following" empty={<Empty
@@ -26,6 +26,6 @@ export default function FollowingPage() {
             hint="홈에서 마음에 드는 기록을 남긴 사람을 팔로우하면, 그 사람의 글이 여기로 모입니다."
             action={<LinkButton href="/">홈에서 둘러보기</LinkButton>} />} />
         : <Empty title="로그인하면 볼 수 있어요" hint="팔로우한 사람들의 감상평은 로그인한 뒤에 읽을 수 있습니다." action={<LinkButton href="/login">로그인</LinkButton>} />}
-    </div><ContextRail /></div>
+    </div></div>
   </>;
 }
