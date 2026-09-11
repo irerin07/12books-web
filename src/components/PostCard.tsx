@@ -1,77 +1,81 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { Post } from "@/lib/types";
 import { Cover } from "./ui";
 import Icon from "./Icon";
+import { useSession } from "@/lib/session";
 
-/**
- * 얼마나 지났는지. 초 단위까지 세지 않는다 — 감상평은 분 단위로 다투는 글이 아니다.
- * 하루가 넘으면 날짜로 적는다. "8일 전"은 사람이 다시 계산해야 하는 표현이다.
- */
 function since(iso: string) {
   const written = new Date(iso);
-  const minutes = Math.floor((Date.now() - written.getTime()) / 60000);
+  const minutes = Math.max(0, Math.floor((Date.now() - written.getTime()) / 60000));
   if (minutes < 1) return "방금";
   if (minutes < 60) return `${minutes}분 전`;
-  if (minutes < 60 * 24) return `${Math.floor(minutes / 60)}시간 전`;
-  if (minutes < 60 * 24 * 7) return `${Math.floor(minutes / 1440)}일 전`;
+  if (minutes < 1440) return `${Math.floor(minutes / 60)}시간 전`;
+  if (minutes < 10080) return `${Math.floor(minutes / 1440)}일 전`;
   return written.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" });
 }
 
-/**
- * 피드에 한 줄로 놓이는 감상평.
- *
- * 스포일러는 서버가 본문을 지우지 않고 플래그만 준다. 가리는 일은 화면 몫이라 여기서 덮고,
- * 누르면 열린다 — 서버가 지워 버리면 작성자 본인도 자기 글을 못 보게 된다.
- */
-export default function PostCard({ post }: { post: Post }) {
+export default function PostCard({ post, following, followBusy = false, followError, onFollow }: {
+  post: Post;
+  following?: boolean;
+  followBusy?: boolean;
+  followError?: string;
+  onFollow?: () => void;
+}) {
+  const { me } = useSession();
   const [revealed, setRevealed] = useState(false);
-  const pages = post.fromPage
-    ? `${post.fromPage}${post.toPage && post.toPage !== post.fromPage ? `–${post.toPage}` : ""}쪽`
-    : null;
+  const [expanded, setExpanded] = useState(false);
+  const contentId = useId();
+  const pages = post.fromPage !== undefined
+    ? `${post.fromPage}${post.toPage !== undefined && post.toPage !== post.fromPage ? `–${post.toPage}` : ""}쪽`
+    : post.toPage !== undefined ? `${post.toPage}쪽까지` : null;
+  const hidden = post.spoiler && !revealed;
+  const long = post.content.length > 320 || post.content.split("\n").length > 7;
 
-  return <article className="post-card">
-    <header className="flex items-center gap-3">
-      <Link href={`/u/${post.author.handle}`} className="avatar">
+  return <article className="post-card" aria-label={`${post.author.displayName}님의 ${post.book.title} 감상`}>
+    <header className="post-author">
+      <Link href={`/u/${post.author.handle}`} className="avatar" aria-label={`${post.author.displayName} 프로필`}>
         {post.author.avatarUrl
-          // 아바타는 어떤 주소든 올 수 있어 next/image의 허용 목록에 기대지 않는다
           // eslint-disable-next-line @next/next/no-img-element
           ? <img src={post.author.avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
           : post.author.displayName.slice(0, 1)}
       </Link>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <Link href={`/u/${post.author.handle}`} className="truncate text-foot font-semibold">{post.author.displayName}</Link>
-          {/*
-            홈은 팔로잉 글과 아닌 글을 섞어 준다. 표시가 없으면 이 글이 왜 보이는지 알 수 없다.
-            === false로 보는 것이 중요하다 — 책별·사람별 목록에서는 서버가 이 관계를 계산하지
-            않아 값이 아예 빠지는데, undefined를 거짓으로 읽으면 모든 글에 "추천"이 붙는다.
-          */}
-          {post.followingAuthor === false && <span className="status-tag">추천</span>}
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <Link href={`/u/${post.author.handle}`} className="post-author-name">{post.author.displayName}</Link>
+          {me && me.handle !== post.author.handle && following !== undefined && (
+            following ? <span className="text-[13px] text-muted">팔로잉</span> : onFollow && <button
+              type="button" onClick={onFollow} disabled={followBusy}
+              aria-label={`${post.author.displayName}님 팔로우`} aria-busy={followBusy}
+              className="min-h-9 px-1 text-[13px] font-semibold text-accent hover:underline disabled:cursor-wait disabled:opacity-50"
+            >{followBusy ? "팔로우 중…" : "팔로우"}</button>
+          )}
+          <time dateTime={post.createdAt} title={new Date(post.createdAt).toLocaleString("ko-KR")} className="post-time">· {since(post.createdAt)}</time>
         </div>
-        <p className="text-cap text-faint">@{post.author.handle} · {since(post.createdAt)}</p>
+        <p className="post-reading-context">{pages ? `${pages} 읽고 남긴 생각` : "책을 읽고 남긴 생각"}</p>
       </div>
     </header>
+    {followError && <p role="alert" className="mt-2 text-foot text-danger">{followError}</p>}
 
-    <div className="post-body">
-      <Cover src={post.book.thumbnailUrl} title={post.book.title} className="w-[52px] shrink-0" />
-      <div className="min-w-0 flex-1">
-        <Link href={`/books/${post.book.id}`} className="text-foot font-semibold hover:text-accent">{post.book.title}</Link>
-        <p className="mt-0.5 text-cap text-muted">{post.book.authors}{pages ? ` · ${pages}` : ""}</p>
-
-        {post.spoiler && !revealed
-          ? <button onClick={() => setRevealed(true)} className="spoiler-veil">
-              <Icon name="book" className="h-4 w-4" />스포일러가 있어요 · 눌러서 보기
-            </button>
-          : <p className="mt-3 text-callout leading-loose whitespace-pre-line">{post.content}</p>}
-      </div>
+    <div className="post-content-area">
+      {hidden ? <div className="spoiler-notice">
+        <div className="flex items-center gap-2 text-headline"><Icon name="book" className="h-[18px] w-[18px] text-muted" /><span>책의 내용이 담긴 감상이에요</span></div>
+        <p>스포일러를 포함하고 있어요. 읽어도 괜찮다면 펼쳐 보세요.</p>
+        <button aria-expanded={false} aria-controls={contentId} onClick={() => setRevealed(true)} className="spoiler-toggle">감상 펼치기<Icon name="chevron" className="h-3.5 w-3.5" /></button>
+        <div id={contentId} hidden />
+      </div> : <>
+        <p id={contentId} className={`post-prose ${long && !expanded ? "post-prose-clamped" : ""}`}>{post.content}</p>
+        {long && <button aria-expanded={expanded} aria-controls={contentId} className="post-text-action" onClick={() => setExpanded(value => !value)}>{expanded ? "접기" : "더 읽기"}</button>}
+        {post.spoiler && <button aria-expanded={true} aria-controls={contentId} className="post-text-action" onClick={() => setRevealed(false)}>스포일러 다시 가리기</button>}
+      </>}
     </div>
 
-    {/*
-      좋아요와 댓글은 백엔드 Phase 6에서 생긴다. 그때까지는 서버가 세어 준 수를 읽기만 한다 —
-      누를 수 없는 버튼을 미리 놓으면 눌러 본 사람에게 아무 일도 일어나지 않는다.
-    */}
+    <Link href={`/books/${post.book.id}`} className="post-book">
+      <Cover src={post.book.thumbnailUrl} title={post.book.title} className="w-[48px] shrink-0" radius="rounded-sm" />
+      <div className="min-w-0 flex-1"><h2 className="post-book-title">{post.book.title}</h2><p>{post.book.authors}</p><span className="post-book-more">이 책의 다른 기록</span></div>
+      <Icon name="chevron" className="h-4 w-4 shrink-0 text-faint" />
+    </Link>
     {post.likeCount + post.commentCount > 0 && <footer className="post-counts">
       {post.likeCount > 0 && <span>좋아요 {post.likeCount}</span>}
       {post.commentCount > 0 && <span>댓글 {post.commentCount}</span>}

@@ -6,13 +6,13 @@ A modern reading app with clear navigation, compact hierarchy and purposeful whi
 ## Typography and color
 - Wanted Sans Variable, with native Korean sans-serif fallbacks.
 - Page titles 26px / 650, mobile 23px. Section titles 16–18px / 650. Body 14–15px with 1.6–1.7 line height; metadata 12–13px.
-- Canvas #fafbf9; surface #ffffff; ink #202a25; muted #727c75; borders #e8ece7.
-- Accent #35735a, hover #285c47. Pastels are reserved for search topic illustrations.
+- Canvas and surface #ffffff; ink #242424; muted #737373; borders #e9e9e9. Navigation uses neutral ink; shared primary buttons use charcoal.
+- Accent #35735a, hover #285c47. Discovery topics use paper-colored surfaces and muted green line art.
 
 ## Layout
-- Sidebar 224px, tablet rail 80px, mobile bottom navigation and 60px header.
-- Main content max 1160px including 40px gutters. Primary content plus 240px context rail; single column below 960px.
-- Cards 12px radius, controls 8px, book covers 4px. Buttons 36–44px high.
+- Desktop sidebar rests at 80px and expands to 224px on hover or keyboard focus without moving content. Menu items sit at the vertical center; the account avatar remains visible at the bottom. Mobile uses bottom navigation and a 60px header.
+- Shared main content max 760px including 40px gutters. No global breadcrumb bar. Home and following use a compact feed switcher.
+- Cards 12px radius, buttons 6px, book covers 4px. Buttons 36–44px high.
 - Library uses a responsive 4/3/2-column grid, title/author/status beneath each book.
 - Reduced motion is respected; focus indicators and keyboard-operable dialogs are required.
 
@@ -21,8 +21,8 @@ A modern reading app with clear navigation, compact hierarchy and purposeful whi
 - Topic buttons are fixed search keywords, NOT a genre API or a curated list of books. Their label must explain keyword search.
 - Recent searches stay in sessionStorage, are removable, and are optional.
 - Book illustrations are decorative geometric art, not real book covers or user records.
-- Home: visitors see a short product introduction; members see current reading with direct page editing, then the following timeline and an explore list below it.
-- Feed: posts flow as a quiet list, not tiles. Author, book, page range, then the words. Spoilers stay covered until tapped, because the server sends the text and lets the screen decide.
+- Home: visitors see a short introduction; members see the discovery feed. Following is a separate feed. Desktop recording starts from the sidebar; mobile recording starts from the header.
+- Feed: author and reading range, then the reflection, then a compact linked book summary. Prose is 17px desktop / 16px mobile with 1.8 line height. Long reflections can expand beyond seven lines. Spoiler content is not rendered until explicitly revealed; it can be hidden again. Avoid fabricated interaction buttons; existing counts remain read-only.
 - Library: status filters, loaded-book count, cover grid, loading/error/retry/empty states.
 - Profile: identity and book grid, with no invented followers or global statistics from partial pagination.
 - Posts and follows exist in the backend (Phase 4-5). Likes and comments do not; their counts are read-only until Phase 6 ships the actions.

@@ -8,13 +8,13 @@ import { parseHistory, readHistory, rememberSearch, subscribeHistory, writeHisto
 import type { Book, BookSearchPage, BookSearchResult, Reading } from "@/lib/types";
 import { Button, Cover, Empty, Spinner } from "@/components/ui";
 import Icon from "@/components/Icon";
-import BookArt from "@/components/BookArt";
+import TopicArt from "@/components/TopicArt";
 
 const topics = [
-  {title:"소설",description:"이야기 속으로",color:"#edf3e9"},
-  {title:"에세이",description:"다른 사람의 시선",color:"#f7eee7"},
-  {title:"인문",description:"생각의 폭을 넓히는",color:"#ecf1f6"},
-  {title:"과학",description:"세상을 이해하는",color:"#f1eef7"},
+  {title:"소설",description:"이야기 속으로"},
+  {title:"에세이",description:"다른 사람의 시선"},
+  {title:"인문",description:"생각의 폭을 넓히는"},
+  {title:"과학",description:"세상을 이해하는"},
 ];
 export default function SearchPage() {
   return <Suspense fallback={<Spinner />}><SearchRoute /></Suspense>;
@@ -109,7 +109,7 @@ function SearchContent({ term }: { term: string }) {
       {busy && <Spinner />}
       {results !== null && !busy ? <section className="mt-7"><div className="section-heading"><h2>검색 결과 <span className="ml-1 text-accent">{total > 0 ? total : results.length}</span></h2><button onClick={() => router.push("/search")} className="text-cap text-muted">탐색으로 돌아가기</button></div>{results.length === 0 ? <Empty title={`‘${searched}’ 검색 결과가 없어요`} hint="제목의 일부나 작가 이름으로 다시 찾아보세요." /> : <ul>{results.map((item, index) => { const key = item.isbn13 ?? `${item.title}-${item.authors}`; return <li className="search-result" key={`${key}-${index}`}><Cover src={item.thumbnailUrl} title={item.title} className="w-[66px] shrink-0 sm:w-[72px]" /><div className="min-w-0 flex-1"><h3 className="text-headline leading-relaxed">{item.title}</h3><p className="mt-1.5 text-foot text-muted">{item.authors}</p><p className="mt-1 text-cap text-faint">{[item.publisher,item.publishedAt?.slice(0,4)].filter(Boolean).join(" · ")}</p><Button variant="quiet" onClick={() => void shelve(item)} disabled={shelving !== null} className="mt-3 gap-1.5"><Icon name="plus" className="h-3.5 w-3.5" />{shelving === key ? "담는 중" : "서재에 담기"}</Button></div></li>; })}</ul>}{hasNext && <div className="mt-8 text-center"><Button variant="quiet" onClick={() => void loadMore()} disabled={moreBusy}>{moreBusy ? "불러오는 중" : "더 보기"}</Button></div>}</section> : !busy && <>
         {recent.length > 0 && <section className="mt-6"><div className="section-heading"><h2>최근 검색</h2><button className="text-cap text-muted" onClick={() => writeHistory(me?.handle ?? null, [])}>전체 삭제</button></div><div className="flex flex-wrap gap-2">{recent.map(term => <button className="keyword" key={term} onClick={() => void search(term)}><Icon name="clock" className="h-3.5 w-3.5" />{term}</button>)}</div></section>}
-        <section className="mt-8"><div className="section-heading"><h2>주제 키워드로 검색</h2></div><div className="topic-grid">{topics.map((topic, i) => <button key={topic.title} onClick={() => void search(topic.title)} className="topic-card" style={{background:topic.color}}><div className="topic-copy"><strong>{topic.title}</strong><span>{topic.description}</span><Icon name="arrow" className="mt-5 h-4 w-4 text-muted" /></div><BookArt variant={i} /></button>)}</div></section>
+        <section className="mt-8"><div className="section-heading"><h2>주제 키워드로 검색</h2></div><div className="topic-grid">{topics.map((topic, i) => <button key={topic.title} onClick={() => void search(topic.title)} className="topic-card"><div className="topic-copy"><strong>{topic.title}</strong><span>{topic.description}</span><Icon name="arrow" className="mt-5 h-4 w-4 text-muted" /></div><TopicArt variant={i} /></button>)}</div></section>
         <section className="mt-8 border-t border-line pt-6"><div className="section-heading"><h2>관심 있는 주제로</h2></div><div className="flex flex-wrap gap-2">{["한국문학","철학","심리학","예술","여행","자연"].map(term => <button key={term} className="keyword" onClick={() => void search(term)}>{term}<Icon name="arrow" className="h-3 w-3" /></button>)}</div></section>
       </>}
     </div></div>

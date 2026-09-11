@@ -5,11 +5,11 @@ import { useId, useState } from "react";
 import Icon from "./Icon";
 
 export function Button({children,variant="primary",size="md",...props}:React.ButtonHTMLAttributes<HTMLButtonElement>&{variant?:"primary"|"quiet"|"plain";size?:"md"|"lg"}) {
-  const look={primary:"bg-accent text-white hover:bg-accent-hover",quiet:"border border-line bg-white text-ink hover:bg-fill",plain:"text-accent hover:bg-fill"}[variant];
-  return <button {...props} className={`press inline-flex items-center justify-center whitespace-nowrap rounded-lg font-semibold disabled:cursor-not-allowed disabled:opacity-45 ${size==="lg"?"h-11 px-5 text-callout":"h-9 px-3.5 text-foot"} ${look} ${props.className??""}`}>{children}</button>;
+  const look={primary:"bg-ink text-white hover:bg-[#404040]",quiet:"border border-line bg-white text-ink hover:bg-fill",plain:"text-ink hover:bg-fill"}[variant];
+  return <button {...props} className={`press inline-flex items-center justify-center whitespace-nowrap rounded-md font-semibold disabled:cursor-not-allowed disabled:opacity-45 ${size==="lg"?"h-11 px-5 text-callout":"h-9 px-3.5 text-foot"} ${look} ${props.className??""}`}>{children}</button>;
 }
 export function LinkButton({href,children}:{href:string;children:React.ReactNode}) {
-  return <Link href={href} className="press inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-lg bg-accent px-4 text-foot font-semibold text-white hover:bg-accent-hover">{children}</Link>;
+  return <Link href={href} className="press inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-md bg-ink px-4 text-foot font-semibold text-white hover:bg-[#404040]">{children}</Link>;
 }
 export function FieldGroup({children}:{children:React.ReactNode}) {return <div className="space-y-5">{children}</div>;}
 export function Field({label,error,...props}:React.InputHTMLAttributes<HTMLInputElement>&{label:string;error?:string|null}) {

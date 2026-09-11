@@ -4,6 +4,7 @@ import { useSession } from "@/lib/session";
 import { Empty, LinkButton } from "@/components/ui";
 import Icon from "@/components/Icon";
 import BookArt from "@/components/BookArt";
+import FeedHeader from "@/components/FeedHeader";
 import Feed from "@/components/Feed";
 
 export default function HomePage() {
@@ -20,7 +21,7 @@ export default function HomePage() {
   </div></div>;
   return <>
     <div className="content-columns">
-      <header className="page-heading"><div><h1>홈</h1></div><LinkButton href="/library"><Icon name="pen" className="mr-1.5 h-4 w-4" />기록 남기기</LinkButton></header>
+      <FeedHeader active="home" />
       <div className="min-w-0">
       {/*
         홈은 피드 하나만 한다. 읽는 책은 서재로 갔다 — 성격이 다른 것을 한 화면에 쌓으면
