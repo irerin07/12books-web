@@ -10,6 +10,7 @@ import ReadingSheet from "@/components/ReadingSheet";
 import { Button, Empty, Spinner } from "@/components/ui";
 import FollowButton from "@/components/FollowButton";
 import Feed from "@/components/Feed";
+import ProfileEditSheet from "@/components/ProfileEditSheet";
 import { LinkButton } from "@/components/ui";
 
 /**
@@ -35,6 +36,7 @@ export default function ProfilePage({
    * 아래쪽은 아무도 닿지 않는다. 인스타 프로필의 격자 전환과 같은 자리다.
    */
   const [tab, setTab] = useState<"library" | "posts">("library");
+  const [editing, setEditing] = useState(false);
 
   const fetchPage = useCallback(
     async (next: number | null) => {
@@ -132,9 +134,14 @@ export default function ProfilePage({
 
           <div className="mt-5 flex gap-2">
             {isMine ? (
-              <Button variant="quiet" onClick={() => void logout()}>
-                로그아웃
-              </Button>
+              <>
+                <Button variant="quiet" onClick={() => setEditing(true)}>
+                  프로필 수정
+                </Button>
+                <Button variant="quiet" onClick={() => void logout()}>
+                  로그아웃
+                </Button>
+              </>
             ) : me ? (
               /* 팔로워 수는 버튼을 누른 그 자리에서 함께 움직인다. 다시 불러오지 않는다. */
               <FollowButton
@@ -196,6 +203,15 @@ export default function ProfilePage({
           } />
         </div>
       )}
+
+      {editing && profile ? (
+        <ProfileEditSheet
+          profile={profile}
+          onClose={() => setEditing(false)}
+          /* 저장한 값이 곧 화면이다. 다시 불러오면 서재 격자까지 처음부터 그려진다. */
+          onSaved={(updated) => setProfile(updated)}
+        />
+      ) : null}
 
       {selected ? (
         <ReadingSheet
