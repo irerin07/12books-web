@@ -17,15 +17,41 @@ const topics = [
   {title:"인문",description:"생각의 폭을 넓히는"},
   {title:"과학",description:"세상을 이해하는"},
 ];
+/**
+ * 검색 범위. 서버의 BookSearchTarget과 같은 값이다.
+ *
+ * 섞여 있으면 원하는 쪽이 묻힌다 — 백엔드 실측으로 "박경리"는 전체 628건인데 저자로 좁히면
+ * 568건, 제목으로 좁히면 228건이다. 어느 쪽을 찾는지는 사람이 안다.
+ */
+const TARGETS = [
+  { value: "ALL", label: "전체" },
+  { value: "TITLE", label: "제목" },
+  { value: "AUTHOR", label: "저자" },
+] as const;
+type Target = (typeof TARGETS)[number]["value"];
+
+function readTarget(raw: string | null): Target {
+  return TARGETS.some(t => t.value === raw) ? (raw as Target) : "ALL";
+}
+
+/** 검색 주소 한 곳에서 만든다. 흩어 두면 범위를 붙이는 것을 한쪽에서 잊는다. */
+function searchPath(term: string, target: Target) {
+  const params = new URLSearchParams({ q: term });
+  if (target !== "ALL") params.set("target", target);
+  return `/search?${params}`;
+}
+
 export default function SearchPage() {
   return <Suspense fallback={<Spinner />}><SearchRoute /></Suspense>;
 }
 function SearchRoute() {
   const params = useSearchParams();
   const term = (params.get("q") ?? "").trim();
-  return <SearchContent key={term} term={term} />;
+  const target = readTarget(params.get("target"));
+  /* 범위가 바뀌면 다른 검색이다. 앞의 결과가 잠깐 남아 있으면 어느 범위의 것인지 알 수 없다. */
+  return <SearchContent key={`${target}:${term}`} term={term} target={target} />;
 }
-function SearchContent({ term }: { term: string }) {
+function SearchContent({ term, target }: { term: string; target: Target }) {
   const router = useRouter();
   const { me } = useSession();
   const [query, setQuery] = useState(term);
@@ -59,12 +85,12 @@ function SearchContent({ term }: { term: string }) {
     setError(null);
     if (!me) { setNeedsLogin(true); return; }
     if (q === term) { setBusy(true); setResults(null); setRetry(value => value + 1); }
-    else router.push(`/search?q=${encodeURIComponent(q)}`);
+    else router.push(searchPath(q, target));
   }
   useEffect(() => {
     if (!term || !me) return;
     const id = ++requestId.current;
-    void api<BookSearchPage>(`/api/v1/books/search?q=${encodeURIComponent(term)}`)
+    void api<BookSearchPage>(`/api/v1/books/search?q=${encodeURIComponent(term)}&target=${target}`)
       .then(found => {
         if (id !== requestId.current) return;
         setResults(found.items);
@@ -77,13 +103,13 @@ function SearchContent({ term }: { term: string }) {
       })
       .finally(() => { if (id === requestId.current) setBusy(false); });
     return () => { requestId.current += 1; };
-  }, [term, me, retry]);
+  }, [term, target, me, retry]);
   async function loadMore() {
     const next = page + 1;
     const id = requestId.current;
     setMoreBusy(true); setError(null);
     try {
-      const found = await api<BookSearchPage>(`/api/v1/books/search?q=${encodeURIComponent(term)}&page=${next}`);
+      const found = await api<BookSearchPage>(`/api/v1/books/search?q=${encodeURIComponent(term)}&target=${target}&page=${next}`);
       if (id !== requestId.current) return;
       setResults(prev => [...(prev ?? []), ...found.items]);
       setHasNext(found.hasNext); setPage(found.page);
@@ -131,6 +157,20 @@ function SearchContent({ term }: { term: string }) {
       <header className="page-heading"><div><h1>검색</h1></div></header>
       <div className="min-w-0">
       <form role="search" onSubmit={e => { e.preventDefault(); void search(query); }} className="search-box"><Icon name="search" className="h-5 w-5 shrink-0 text-accent" /><input ref={input} value={query} onChange={e => setQuery(e.target.value)} maxLength={100} aria-label="책 제목 또는 작가" placeholder="책 제목 또는 작가 검색" />{query && <button type="button" aria-label="검색어 지우기" onClick={() => { setQuery(""); input.current?.focus(); }} className="p-1 text-faint"><Icon name="close" className="h-4 w-4" /></button>}<Button type="submit" disabled={busy}>검색</Button></form>
+      {/*
+        범위 토글. 검색창 바로 아래에 둔다 — 무엇을 찾는지 정하고 나서 치는 것이 아니라,
+        쳐 보고 너무 많으면 좁히는 순서가 실제 사람의 순서다.
+
+        이미 검색한 뒤라면 누르는 즉시 그 범위로 다시 찾는다. 검색어를 또 치게 하지 않는다.
+      */}
+      <div className="mt-3 flex justify-center"><div className="segmented">
+        {TARGETS.map(option => <button key={option.value} type="button"
+          data-on={target === option.value} aria-pressed={target === option.value}
+          onClick={() => { const q = query.trim() || term; if (q) router.push(searchPath(q, option.value)); }}
+          className="segmented-item px-4 py-2 text-callout font-medium">
+          {option.label}
+        </button>)}
+      </div></div>
       {needsLogin && <div role="status" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-white px-4 py-3"><p className="text-foot text-muted">책 검색은 로그인 후 이용할 수 있어요.</p><Link href="/login" className="text-foot font-semibold text-accent">로그인하기 →</Link></div>}
       {error && <div role="alert" className="mt-4 rounded-lg bg-danger/5 p-4 text-foot text-danger">{error}</div>}
       {busy && <Spinner />}
