@@ -26,7 +26,7 @@ export default function ResumeSheet({ past, title, busy, onPick, onClose }: {
   return <div className="fixed inset-0 z-40 flex items-end justify-center sm:items-center">
     <button aria-label="닫기" onClick={onClose} className="absolute inset-0 animate-[fade-in_0.25s_ease] bg-black/40 backdrop-blur-[2px]" />
     <div role="dialog" aria-modal="true" aria-label="다시 담기"
-      className="relative w-full animate-[sheet-in_0.4s_var(--ease-spring)] rounded-t-3xl bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-sheet sm:max-w-[420px] sm:rounded-3xl sm:pb-5">
+      className="relative w-full animate-[sheet-in_0.4s_var(--ease-spring)] rounded-t-xl bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-sheet sm:max-w-[420px] sm:rounded-xl sm:pb-5">
       <h2 className="text-headline">전에 읽던 책이에요</h2>
       {/*
         제목과 진도를 한 문장으로 엮지 않는다. "사피엔스을(를)"처럼 조사가 어긋나고,
