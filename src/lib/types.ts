@@ -94,6 +94,13 @@ export type Reading = {
   startedAt?: string;
   finishedAt?: string;
   rating?: number;
+  /**
+   * 지금 서재에 있는 기록인지. 항상 실린다.
+   *
+   * 서재 목록에서는 늘 참이지만, 책 화면에서 이 책의 기록 하나만 물었을 때는 거짓일 수 있다 —
+   * 전에 읽다가 뺀 기록이라는 뜻이다. 그때 그냥 담으면 서버가 R003으로 막는다.
+   */
+  inBookshelf: boolean;
 };
 
 export type LibraryItem = {

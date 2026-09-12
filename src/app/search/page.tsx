@@ -7,6 +7,7 @@ import { useSession } from "@/lib/session";
 import { parseHistory, readHistory, rememberSearch, subscribeHistory, writeHistory } from "@/lib/searchHistory";
 import type { Book, BookSearchPage, BookSearchResult, Reading } from "@/lib/types";
 import { Button, Cover, Empty, Spinner } from "@/components/ui";
+import ResumeSheet from "@/components/ResumeSheet";
 import Icon from "@/components/Icon";
 import TopicArt from "@/components/TopicArt";
 
@@ -44,6 +45,8 @@ function SearchContent({ term }: { term: string }) {
   const [error, setError] = useState<string | null>(null);
   const [needsLogin, setNeedsLogin] = useState(Boolean(term && !me));
   const [shelving, setShelving] = useState<string | null>(null);
+  /** 전에 읽다 뺀 책을 다시 담으려는 중. 무엇을 할지 고르면 그 값으로 다시 보낸다. */
+  const [asking, setAsking] = useState<{ item: BookSearchResult; past: Reading } | null>(null);
   const requestId = useRef(0);
   const input = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -89,17 +92,41 @@ function SearchContent({ term }: { term: string }) {
       setError(e instanceof ApiError && e.status === 401 ? "로그인 상태를 확인해 주세요." : "다음 결과를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
     } finally { if (id === requestId.current) setMoreBusy(false); }
   }
-  async function shelve(item: BookSearchResult) {
+  /**
+   * 검색 결과에서 바로 담는다. 책을 내부에 확정하고(POST /books) 그 id로 서재에 넣는다.
+   *
+   * 전에 읽다 뺀 책이면 서버가 R003으로 막는다. 그때는 지난 기록을 가져와 이어서 읽을지
+   * 새로 시작할지 묻고, 고른 값을 담아 다시 보낸다 — 서버가 대신 고르지 않는 이유가
+   * 그대로 여기서 물어야 하는 이유다.
+   */
+  async function shelve(item: BookSearchResult, resume?: boolean) {
     const key = item.isbn13 ?? `${item.title}-${item.authors}`;
     setShelving(key); setError(null);
     try {
       const book = await api<Book>("/api/v1/books", { method: "POST", body: item });
-      await api<Reading>("/api/v1/readings", { method: "POST", body: { bookId: book.id, status: "WANT_TO_READ" } });
+      await api<Reading>("/api/v1/readings", {
+        method: "POST",
+        body: { bookId: book.id, status: "WANT_TO_READ", ...(resume === undefined ? {} : { resume }) },
+      });
       router.push("/library");
-    } catch (e) { setError(e instanceof ApiError && e.code === "R002" ? "이미 서재에 담긴 책입니다." : "책을 담지 못했습니다. 다시 시도해 주세요."); }
+    } catch (e) {
+      if (e instanceof ApiError && e.code === "R003") {
+        try {
+          // 같은 책을 다시 확정해도 새 행이 생기지 않고 같은 id가 온다.
+          const book = await api<Book>("/api/v1/books", { method: "POST", body: item });
+          setAsking({ item, past: await api<Reading>(`/api/v1/books/${book.id}/reading`) });
+        } catch { setError("전에 읽던 기록을 불러오지 못했습니다. 다시 시도해 주세요."); }
+      } else {
+        setError(e instanceof ApiError && e.code === "R002" ? "이미 서재에 담긴 책입니다." : "책을 담지 못했습니다. 다시 시도해 주세요.");
+      }
+    }
     finally { setShelving(null); }
   }
+  const askedTitle = asking?.item.title ?? "";
+
   return <>
+    {asking && <ResumeSheet past={asking.past} title={askedTitle} busy={shelving !== null}
+      onPick={resume => void shelve(asking.item, resume)} onClose={() => setAsking(null)} />}
     <div className="content-columns">
       <header className="page-heading"><div><h1>검색</h1></div></header>
       <div className="min-w-0">
