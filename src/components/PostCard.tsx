@@ -1,10 +1,12 @@
 "use client";
 import Link from "next/link";
 import { useId, useState } from "react";
+import { ApiError, api } from "@/lib/api";
 import type { Post } from "@/lib/types";
 import { Cover } from "./ui";
 import Icon from "./Icon";
 import { useSession } from "@/lib/session";
+import PostComments from "./PostComments";
 
 function since(iso: string) {
   const written = new Date(iso);
@@ -25,12 +27,39 @@ export default function PostCard({ post, following, followBusy = false, followEr
 }) {
   const { me } = useSession();
   const [revealed, setRevealed] = useState(false);
+  /*
+   * 하트는 낙관적으로 먼저 칠한다. 누르고 나서 서버를 기다리면 눌렀는지 아닌지가 잠깐
+   * 비어 있고, 그 사이 사람은 한 번 더 누른다.
+   */
+  const [liked, setLiked] = useState(post.likedByMe);
+  const [likeCount, setLikeCount] = useState(post.likeCount);
+  const [likeBusy, setLikeBusy] = useState(false);
+  const [commentCount, setCommentCount] = useState(post.commentCount);
+  const [showComments, setShowComments] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const contentId = useId();
   const pages = post.fromPage !== undefined
     ? `${post.fromPage}${post.toPage !== undefined && post.toPage !== post.fromPage ? `–${post.toPage}` : ""}쪽`
     : post.toPage !== undefined ? `${post.toPage}쪽까지` : null;
   const hidden = post.spoiler && !revealed;
+
+  async function toggleLike() {
+    if (likeBusy) return;
+    const next = !liked;
+    setLikeBusy(true);
+    setLiked(next); setLikeCount(count => count + (next ? 1 : -1));
+    try {
+      await api<void>(`/api/v1/posts/${post.id}/likes`, { method: next ? "POST" : "DELETE" });
+    } catch (e) {
+      /*
+       * P002는 이미 눌러 둔 글이다 — 실패가 아니라 원하던 상태에 이미 도달해 있다.
+       * 취소는 서버가 멱등이라 애초에 실패하지 않는다.
+       */
+      if (!(e instanceof ApiError && e.code === "P002")) {
+        setLiked(!next); setLikeCount(count => count + (next ? -1 : 1));
+      }
+    } finally { setLikeBusy(false); }
+  }
   const long = post.content.length > 320 || post.content.split("\n").length > 7;
 
   return <article className="post-card" aria-label={`${post.author.displayName}님의 ${post.book.title} 감상`}>
@@ -76,9 +105,20 @@ export default function PostCard({ post, following, followBusy = false, followEr
       <div className="min-w-0 flex-1"><h2 className="post-book-title">{post.book.title}</h2><p>{post.book.authors}</p><span className="post-book-more">이 책의 다른 기록</span></div>
       <Icon name="chevron" className="h-4 w-4 shrink-0 text-faint" />
     </Link>
-    {post.likeCount + post.commentCount > 0 && <footer className="post-counts">
-      {post.likeCount > 0 && <span>좋아요 {post.likeCount}</span>}
-      {post.commentCount > 0 && <span>댓글 {post.commentCount}</span>}
-    </footer>}
+    <footer className="post-actions">
+      <button onClick={() => void toggleLike()} disabled={likeBusy} aria-pressed={liked}
+        aria-label={liked ? "좋아요 취소" : "좋아요"} className={`post-action ${liked ? "is-on" : ""}`}>
+        <Icon name={liked ? "heart-filled" : "heart"} className="h-[18px] w-[18px]" />
+        {likeCount > 0 && <span className="tabular-nums">{likeCount}</span>}
+      </button>
+      <button onClick={() => setShowComments(open => !open)} aria-expanded={showComments}
+        aria-label="댓글" className="post-action">
+        <Icon name="comment" className="h-[18px] w-[18px]" />
+        {commentCount > 0 && <span className="tabular-nums">{commentCount}</span>}
+      </button>
+    </footer>
+
+    {showComments && <PostComments postId={post.id} postAuthor={post.author.handle}
+      onCountChange={delta => setCommentCount(count => Math.max(0, count + delta))} />}
   </article>;
 }
