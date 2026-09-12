@@ -95,11 +95,22 @@ export default function Feed({ path, empty }: { path: string; empty: React.React
 
   if (error) return <Empty title="감상평을 불러오지 못했어요" hint="잠시 후 다시 시도해 주세요." />;
   if (posts === null) return <Spinner />;
+  /*
+   * 이 목록의 글쓴이를 내가 팔로우 중인지. 서버가 항목마다 알려주지 않는다 — 목록 자체가
+   * 답이기 때문이다. 홈은 팔로잉을 뺀 사람들만, 팔로잉은 고른 사람들만 준다.
+   *
+   * 프로필과 책별 목록은 섞여 있어 알 수 없다. 그때는 undefined로 두어 버튼을 그리지 않는다 —
+   * 모르면서 "팔로우"를 내밀면 이미 팔로우한 사람에게도 그 버튼이 보인다.
+   */
+  const knownRelation =
+    path === "/api/v1/feed" ? false :
+    path === "/api/v1/feed/following" ? true : undefined;
+
   if (posts.length === 0) return <>{empty}</>;
 
   return <>
     <div>{posts.map(post => <PostCard key={post.id} post={post}
-      following={relationships[post.author.handle] ?? post.followingAuthor ?? (path === "/api/v1/feed/following" ? true : undefined)}
+      following={relationships[post.author.handle] ?? knownRelation}
       followBusy={pending[post.author.handle] ?? false}
       followError={followErrors[post.author.handle]}
       onFollow={() => void follow(post.author.handle)} />)}</div>
