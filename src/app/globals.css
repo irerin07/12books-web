@@ -163,7 +163,7 @@ button:not(:disabled),a {cursor:pointer;}
 
 .app-sidebar .account-link>.avatar {background:#f4f4f4;color:#424242;border:1px solid #e5e5e5;font-size:12px;}
 .guest-top {display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--color-muted);padding-bottom:24px;border-bottom:1px solid var(--color-line);}
-.guest-top a,.guest-actions>a:last-child {display:inline-flex;align-items:center;gap:10px;color:var(--color-ink);}
+.guest-top a {display:inline-flex;align-items:center;gap:10px;color:var(--color-ink);}
 .guest-intro {padding:68px 0 60px;}
 .guest-eyebrow {font-size:13px;color:var(--color-muted);margin-bottom:22px;}
 .guest-intro h1 {font-size:44px;line-height:1.35;font-weight:650;letter-spacing:-1.8px;word-break:keep-all;}

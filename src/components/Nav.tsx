@@ -28,7 +28,13 @@ export default function Nav() {
       <nav aria-label="주 메뉴" className="desktop-nav">{items.map(item => <Link key={item.label} href={item.href} aria-label={item.label} aria-current={item.active ? "page" : undefined} className="nav-item"><Icon name={item.icon} /><span>{item.label}</span></Link>)}</nav>
       <Link className="sidebar-compose" aria-label="기록하기" href={me ? "/library" : "/login"}><Icon name="pen" /><span>기록하기</span></Link>
       </div>
-      <div className="sidebar-bottom">{me ? <Link href={`/u/${me.handle}`} className="account-link" aria-label={`${me.handle} 내 프로필`}><span className="avatar">{me.handle[0].toUpperCase()}</span><span className="truncate">@{me.handle}</span><Icon name="chevron" className="ml-auto h-4 w-4" /></Link> : <><p>나만의 독서 생활을 시작하세요.</p><Link href="/signup" className="text-accent font-semibold">무료로 가입하기 ↗</Link></>}</div>
+      <div className="sidebar-bottom">
+        <Link href={me ? `/u/${me.handle}` : "/login"} className="account-link" aria-label={me ? `${me.handle} 내 프로필` : "로그인"}>
+          <span className="avatar">{me ? me.handle[0].toUpperCase() : <Icon name="user" className="h-[18px] w-[18px]" />}</span>
+          <span className="truncate">{me ? `@${me.handle}` : "로그인"}</span>
+          <Icon name="chevron" className="ml-auto h-4 w-4" />
+        </Link>
+      </div>
     </aside>
     <header className="mobile-header"><Brand /><Link href={me ? "/library" : "/login"} className="text-foot font-semibold text-accent">{me ? "기록하기" : "로그인"}</Link></header>
     <nav aria-label="모바일 주 메뉴" className="mobile-nav">{items.map(item => <Link key={item.label} href={item.href} aria-current={item.active ? "page" : undefined}><Icon name={item.icon} /><span>{item.label}</span></Link>)}</nav>
