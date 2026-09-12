@@ -101,6 +101,14 @@ export type LibraryItem = {
   book: Book;
 };
 
+/** 감상평에 달린 댓글 한 건. 백엔드 CommentResponse와 1:1이다. 대댓글은 없다. */
+export type Comment = {
+  id: number;
+  author: UserSummary;
+  content: string;
+  createdAt: string;
+};
+
 export type CursorPage<T> = {
   items: T[];
   nextCursor: number | null;
@@ -148,11 +156,10 @@ export type Post = {
   commentCount: number;
   createdAt: string;
   /**
-   * 보는 사람이 이 글의 작성자를 팔로우 중인지. 홈 피드에만 실린다.
+   * 보는 사람이 이 글에 좋아요를 눌렀는지. 하트의 처음 상태를 그대로 쓴다.
    *
-   * 없을 수 있다(`?`)는 것이 핵심이다. 책별·사람별 목록에서는 서버가 이 관계를 계산하지
-   * 않아 응답에서 아예 빠진다 — 그 자리에서 undefined를 false로 읽으면 "팔로우 안 한 사람"
-   * 이라고 잘못 말하게 된다.
+   * 감상평이 실리는 모든 응답에 들어 있다 — 목록·단건·책별·사람별 어디서도 빠지지 않으므로
+   * 화면마다 다르게 다룰 필요가 없다.
    */
-  followingAuthor?: boolean;
+  likedByMe: boolean;
 };
