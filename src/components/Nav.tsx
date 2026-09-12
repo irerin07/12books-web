@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useSession } from "@/lib/session";
+import RecordSheet from "./RecordSheet";
 import Icon from "./Icon";
 
 export function Brand({ href = "/" }: { href?: string } = {}) {
@@ -12,6 +13,11 @@ export default function Nav() {
   const pathname = usePathname();
   const { me, homeHref } = useSession();
   const [dismissed, setDismissed] = useState(false);
+  /*
+   * 기록하기는 서재로 보내지 않는다. 그러면 "내 서재"와 같은 일을 하는 메뉴가 둘이 된다 —
+   * 서재는 무엇을 갖고 있는지 보는 자리, 여기는 지금 읽던 책에 한 줄 남기는 자리다.
+   */
+  const [recording, setRecording] = useState(false);
   const items = [
     /*
      * 팔로잉은 메뉴가 아니라 홈 안의 탭이다. 홈에서 "추천 / 팔로잉"을 오갈 수 있는데
@@ -39,7 +45,9 @@ export default function Nav() {
       <Brand href={homeHref} />
       <div className="sidebar-menu">
       <nav aria-label="주 메뉴" className="desktop-nav">{items.map(item => <Link key={item.label} href={item.href} aria-label={item.label} aria-current={item.active ? "page" : undefined} className="nav-item"><Icon name={item.icon} /><span>{item.label}</span></Link>)}</nav>
-      <Link className="sidebar-compose" aria-label="기록하기" href={me ? "/library" : "/login"}><Icon name="pen" /><span>기록하기</span></Link>
+      {me
+        ? <button type="button" className="sidebar-compose" aria-label="기록하기" onClick={() => setRecording(true)}><Icon name="pen" /><span>기록하기</span></button>
+        : <Link className="sidebar-compose" aria-label="기록하기" href="/login"><Icon name="pen" /><span>기록하기</span></Link>}
       </div>
       <div className="sidebar-bottom">
         <Link href={me ? `/u/${me.handle}` : "/login"} className="account-link" aria-label={me ? `${me.handle} 내 프로필` : "로그인"}>
@@ -49,7 +57,10 @@ export default function Nav() {
         </Link>
       </div>
     </aside>
-    <header className="mobile-header"><Brand href={homeHref} /><Link href={me ? "/library" : "/login"} className="text-foot font-semibold text-accent">{me ? "기록하기" : "로그인"}</Link></header>
+    <header className="mobile-header"><Brand href={homeHref} />{me
+      ? <button type="button" onClick={() => setRecording(true)} className="text-foot font-semibold text-accent">기록하기</button>
+      : <Link href="/login" className="text-foot font-semibold text-accent">로그인</Link>}</header>
+    {recording && <RecordSheet onClose={() => setRecording(false)} />}
     <nav aria-label="모바일 주 메뉴" className="mobile-nav">{items.map(item => <Link key={item.label} href={item.href} aria-current={item.active ? "page" : undefined}><Icon name={item.icon} /><span>{item.label}</span></Link>)}</nav>
   </>;
 }

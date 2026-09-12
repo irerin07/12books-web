@@ -19,8 +19,13 @@ const MAX_CONTENT = 1000;
  * readingId는 보내지 않는다. 서버가 (나, 책)으로 찾아 붙이거나 만든다 — 화면이 보내게 하면
  * 남의 기록 id를 실어 보내는 경로가 열린다.
  */
-export default function PostComposer({ book, currentPage }: { book: Book; currentPage: number }) {
-  const [open, setOpen] = useState(false);
+export default function PostComposer({ book, currentPage, startOpen = false }: {
+  book: Book;
+  currentPage: number;
+  /** 책을 이미 고르고 들어온 자리(기록하기 시트)에서는 펼친 채로 연다. */
+  startOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(startOpen);
   const [content, setContent] = useState("");
   const [fromPage, setFromPage] = useState("");
   const [toPage, setToPage] = useState(currentPage > 0 ? String(currentPage) : "");
