@@ -163,7 +163,7 @@ function SearchContent({ term, target }: { term: string; target: Target }) {
 
         이미 검색한 뒤라면 누르는 즉시 그 범위로 다시 찾는다. 검색어를 또 치게 하지 않는다.
       */}
-      <div className="mt-3 flex justify-center"><div className="segmented">
+      <div className="mt-3"><div className="segmented">
         {TARGETS.map(option => <button key={option.value} type="button"
           data-on={target === option.value} aria-pressed={target === option.value}
           onClick={() => { const q = query.trim() || term; if (q) router.push(searchPath(q, option.value)); }}

@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { useSession } from "@/lib/session";
 import Icon from "./Icon";
 
@@ -10,6 +11,7 @@ export function Brand({ href = "/" }: { href?: string } = {}) {
 export default function Nav() {
   const pathname = usePathname();
   const { me, homeHref } = useSession();
+  const [dismissed, setDismissed] = useState(false);
   const items = [
     /*
      * 팔로잉은 메뉴가 아니라 홈 안의 탭이다. 홈에서 "추천 / 팔로잉"을 오갈 수 있는데
@@ -22,7 +24,18 @@ export default function Nav() {
     { href: me ? `/u/${me.handle}` : "/login", label: "프로필", icon: "user" as const, active: pathname.startsWith("/u/") },
   ];
   return <>
-    <aside className="app-sidebar">
+    <aside className="app-sidebar" data-dismissed={dismissed}
+      onPointerLeave={() => setDismissed(false)}
+      onFocus={event => {
+        if (event.target.matches(":focus-visible")) setDismissed(false);
+      }}
+      onKeyDown={event => {
+        if (event.key === "Tab") setDismissed(false);
+        if (event.key === "Escape") setDismissed(true);
+      }}
+      onClick={event => {
+        if (event.target instanceof Element && event.target.closest("a")) setDismissed(true);
+      }}>
       <Brand href={homeHref} />
       <div className="sidebar-menu">
       <nav aria-label="주 메뉴" className="desktop-nav">{items.map(item => <Link key={item.label} href={item.href} aria-label={item.label} aria-current={item.active ? "page" : undefined} className="nav-item"><Icon name={item.icon} /><span>{item.label}</span></Link>)}</nav>

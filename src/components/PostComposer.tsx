@@ -79,7 +79,7 @@ export default function PostComposer({ book, currentPage }: { book: Book; curren
     </p>
 
     <div className="group-box mt-3">
-      <label className="flex items-center justify-between gap-4 px-4 py-3.5">
+      <label className="composer-range flex flex-wrap items-center justify-between gap-3 px-4 py-3.5">
         <span className="text-body">읽은 구간 · 비워 둬도 괜찮아요</span>
         <span className="flex items-center gap-1.5 text-body tabular-nums">
           <input type="number" min={1} inputMode="numeric" placeholder="처음" value={fromPage}
