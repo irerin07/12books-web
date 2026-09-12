@@ -11,6 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { api, getAccessToken, reissue, setAccessToken } from "./api";
 import { clearAllHistory } from "./searchHistory";
+import { FEED, defaultFeedPath } from "./feedHome";
 
 type Me = { userId: number; handle: string };
 
@@ -22,6 +23,13 @@ type Session = {
   login: (email: string, password: string) => Promise<Me>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
+  /**
+   * "홈"이 데려갈 곳. 팔로우한 사람이 있으면 팔로잉, 없으면 추천이다.
+   *
+   * 로그인할 때 한 번 정하고 마는 것이 아니라 세션이 들고 있는다 — 다른 화면에 갔다가
+   * 홈으로 돌아와도 같은 곳이어야 한다.
+   */
+  homeHref: string;
 };
 
 const SessionContext = createContext<Session | null>(null);
@@ -52,6 +60,7 @@ function readMe(token: string): Me | null {
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [me, setMe] = useState<Me | null>(null);
+  const [followingIsHome, setFollowingIsHome] = useState(false);
   const [loading, setLoading] = useState(true);
 
   /** 새로고침하면 메모리의 access 토큰은 사라진다. 쿠키로 조용히 되살린다. */
@@ -73,6 +82,20 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       cancelled = true;
     };
   }, [refresh]);
+
+  /*
+   * 누구인지 정해지면 기본 피드를 묻는다. 답이 오기 전과 로그인하지 않은 동안은 추천이다 —
+   * 그 값을 효과 안에서 되돌리지 않고 아래에서 me와 함께 계산한다. 효과가 상태를 곧바로
+   * 되돌리면 화면을 한 번 더 그리게 된다.
+   */
+  useEffect(() => {
+    if (!me) return;
+    let active = true;
+    void defaultFeedPath(me.handle).then(path => { if (active) setFollowingIsHome(path === FEED.following); });
+    return () => { active = false; };
+  }, [me]);
+
+  const homeHref = me && followingIsHome ? FEED.following : FEED.recommend;
 
   const login = useCallback(async (email: string, password: string) => {
     const body = await api<{ accessToken: string }>("/api/v1/auth/login", {
@@ -114,8 +137,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }, [refresh]);
 
   const value = useMemo<Session>(
-    () => ({ me, loading, login, logout, refresh: reload }),
-    [me, loading, login, logout, reload],
+    () => ({ me, loading, login, logout, refresh: reload, homeHref }),
+    [me, loading, login, logout, reload, homeHref],
   );
 
   return <SessionContext value={value}>{children}</SessionContext>;
