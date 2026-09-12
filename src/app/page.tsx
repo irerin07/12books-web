@@ -15,7 +15,7 @@ export default function HomePage() {
       <p className="guest-eyebrow">읽는 사이, 남는 생각.</p>
       <h1>다 읽지 않아도,<br />이야기는 시작됩니다.</h1>
       <p className="guest-description">오늘 읽은 몇 페이지, 마음에 남은 두세 문장.<br />책을 읽는 순간을 기록하고, 다른 독자와 나누세요.</p>
-      <div className="guest-actions"><LinkButton href="/signup">12books 시작하기</LinkButton><Link href="/search">책 둘러보기 <Icon name="arrow" className="h-4 w-4" /></Link></div>
+      <div className="guest-actions"><LinkButton href="/signup">12books 시작하기</LinkButton></div>
     </section>
     <section className="guest-features" aria-label="12books에서 할 수 있는 일">
       {[{title:"읽은 만큼 기록하기",text:"47쪽부터 92쪽까지. 완독을 기다리지 않고 지금의 감상을 남겨요."},{title:"책으로 연결되기",text:"같은 책을 읽는 사람을 발견하고, 마음에 드는 독자를 팔로우해요."},{title:"취향이 쌓이는 서재",text:"읽고 싶은 책과 읽어 온 책을 모아 나만의 서재를 만들어요."}].map((item,i)=><div key={item.title}><span className="guest-index">0{i+1}</span><h2>{item.title}</h2><p>{item.text}</p></div>)}
