@@ -53,10 +53,17 @@ export default function SignupPage() {
             <Field label="비밀번호" type="password" placeholder="8~20자"
               value={form.password} onChange={set("password")}
               error={error?.reasonFor("password")} required />
-            <Field label="아이디" placeholder="영소문자·숫자·_ 3~20자"
+            {/*
+              "아이디"라고 부르면 로그인에 쓰는 것으로 읽힌다 — 이 앱의 로그인은 이메일이다.
+              handle이 실제로 하는 일은 남에게 보이는 주소(/u/…, @…)이고, 가입 뒤에는 바꿀 수
+              없다(서버가 PATCH /me에서 아예 받지 않는다). 그 두 가지를 라벨과 설명이 말한다.
+            */}
+            <Field label="프로필 주소" placeholder="영소문자·숫자·_ 3~20자"
+              hint="/u/여기 · @여기로 쓰여요. 가입 뒤에는 바꿀 수 없어요."
               value={form.handle} onChange={set("handle")}
               error={error?.reasonFor("handle")} required />
-            <Field label="이름" placeholder="서재에 보일 이름"
+            {/* "이름"은 실명인지 별명인지 말하지 않는다. 이 값은 글과 프로필에 표시되는 이름이다. */}
+            <Field label="닉네임" placeholder="글과 프로필에 보일 이름"
               value={form.displayName} onChange={set("displayName")}
               error={error?.reasonFor("displayName")} required />
           </FieldGroup>

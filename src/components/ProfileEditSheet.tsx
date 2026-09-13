@@ -76,13 +76,13 @@ export default function ProfileEditSheet({
 
       <div className="px-5 pt-3 sm:pt-6">
         <h2 id={titleId} className="text-headline">프로필 수정</h2>
-        {/* 바꿀 수 없는 것은 칸이 아니라 설명으로 둔다. */}
-        <p className="mt-1.5 text-foot text-muted">@{profile.handle}</p>
+        {/* 바꿀 수 없는 것은 칸이 아니라 설명으로 둔다. 무엇인지도 함께 적는다. */}
+        <p className="mt-1.5 text-foot text-muted">프로필 주소 @{profile.handle} · 바꿀 수 없어요</p>
 
         <label className="mt-6 block">
-          <span className="mb-2 ml-0.5 block text-foot font-medium text-muted">이름</span>
+          <span className="mb-2 ml-0.5 block text-foot font-medium text-muted">닉네임</span>
           <input value={displayName} onChange={e => setDisplayName(e.target.value)}
-            maxLength={MAX.displayName} className="field" aria-label="이름" />
+            maxLength={MAX.displayName} className="field" aria-label="닉네임" />
           {reason("displayName") && <p className="mt-1.5 text-foot text-danger">{reason("displayName")}</p>}
         </label>
 
