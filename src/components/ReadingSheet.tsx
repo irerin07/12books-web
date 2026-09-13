@@ -5,7 +5,7 @@ import { ApiError, api } from "@/lib/api";
 import type { LibraryItem, Reading, ReadingStatus } from "@/lib/types";
 import { READING_STATUS_LABEL } from "@/lib/types";
 import Link from "next/link";
-import { Button, Cover } from "./ui";
+import { Button, Cover, SheetClose } from "./ui";
 import PostComposer from "./PostComposer";
 import Icon from "./Icon";
 
@@ -104,14 +104,7 @@ export default function ReadingSheet({
           <span className="h-[5px] w-9 rounded-full bg-fill-strong" />
         </div>
 
-        {/*
-          닫기는 아이콘으로 오른쪽 위에 둔다. 바닥에 "닫기"와 "서재에서 빼기"를 나란히 두면
-          그냥 닫는 일과 되돌리기 어려운 일이 같은 글자로 보인다.
-        */}
-        <button type="button" onClick={onClose} aria-label="닫기"
-          className="press absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full text-muted hover:bg-fill hover:text-ink">
-          <Icon name="close" className="h-4 w-4" />
-        </button>
+        <SheetClose onClose={onClose} />
 
         <div className="px-5 pt-3 sm:pt-6">
           <div className="flex gap-4 pr-8">
