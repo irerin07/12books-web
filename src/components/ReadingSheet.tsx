@@ -7,6 +7,7 @@ import { READING_STATUS_LABEL } from "@/lib/types";
 import Link from "next/link";
 import { Button, Cover } from "./ui";
 import PostComposer from "./PostComposer";
+import Icon from "./Icon";
 
 const STATUSES: ReadingStatus[] = [
   "WANT_TO_READ",
@@ -103,8 +104,17 @@ export default function ReadingSheet({
           <span className="h-[5px] w-9 rounded-full bg-fill-strong" />
         </div>
 
+        {/*
+          닫기는 아이콘으로 오른쪽 위에 둔다. 바닥에 "닫기"와 "서재에서 빼기"를 나란히 두면
+          그냥 닫는 일과 되돌리기 어려운 일이 같은 글자로 보인다.
+        */}
+        <button type="button" onClick={onClose} aria-label="닫기"
+          className="press absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full text-muted hover:bg-fill hover:text-ink">
+          <Icon name="close" className="h-4 w-4" />
+        </button>
+
         <div className="px-5 pt-3 sm:pt-6">
-          <div className="flex gap-4">
+          <div className="flex gap-4 pr-8">
             <Cover src={book.thumbnailUrl} title={book.title} className="w-[78px] shrink-0" />
             <div className="min-w-0 pt-0.5">
               <h2 id={titleId} className="text-headline">
@@ -129,12 +139,13 @@ export default function ReadingSheet({
                     disabled={busy}
                     aria-pressed={on}
                     onClick={() => void patch({ status: s })}
-                    className={`press rounded-md border border-line px-3.5 py-2 text-callout disabled:opacity-50 ${
+                    className={`press flex items-center gap-1.5 rounded-md border px-3 py-2 text-callout disabled:opacity-50 ${
                       on
-                        ? "bg-ink font-medium text-white"
-                        : "bg-fill text-muted hover:text-ink"
+                        ? "border-ink/25 bg-fill font-semibold text-ink"
+                        : "border-line bg-white text-muted hover:text-ink"
                     }`}
                   >
+                    {on && <Icon name="check" className="h-3.5 w-3.5" />}
                     {READING_STATUS_LABEL[s]}
                   </button>
                 );
@@ -144,19 +155,23 @@ export default function ReadingSheet({
 
           {/* 진도. iOS 설정 화면처럼 한 덩어리 안에 줄로 나눠 담는다. */}
           <div className="group-box mt-6">
-            <label className="flex items-center justify-between gap-4 px-4 py-3.5">
-              <span className="text-body">현재 쪽</span>
+            {/*
+              이 시트가 열리는 이유가 이 한 줄이다. 나머지와 같은 크기로 두면 무엇을 하러
+              왔는지 화면이 말해 주지 않는다.
+            */}
+            <label className="flex items-center justify-between gap-4 px-4 py-4">
+              <span className="text-body font-semibold">현재 쪽</span>
               <input
                 type="number"
                 min={0}
                 inputMode="numeric"
                 value={currentPage}
                 onChange={(e) => setCurrentPage(e.target.value)}
-                className="w-24 bg-transparent text-right text-body tabular-nums outline-none"
+                className="w-28 bg-transparent text-right text-[26px] font-semibold leading-none tabular-nums outline-none"
               />
             </label>
             <label className="flex items-center justify-between gap-4 px-4 py-3.5">
-              <span className="text-body">총 쪽수</span>
+              <span className="text-body text-muted">총 쪽수</span>
               <input
                 type="number"
                 min={1}
@@ -229,15 +244,12 @@ export default function ReadingSheet({
             </p>
           ) : null}
 
-          <div className="mt-7 flex flex-col gap-2">
-            {/* 테두리를 전체 너비로 두르면 빈 입력칸처럼 보인다. 시트의 닫기는 어디서나 글자다. */}
-            <Button variant="plain" size="lg" onClick={onClose} className="w-full">
-              닫기
-            </Button>
+          {/* 되돌리기 어려운 것은 선 아래에 혼자 둔다. 옆에 짝이 있으면 잘못 눌린다. */}
+          <div className="mt-8 border-t border-line pt-3">
             <button
               disabled={busy}
               onClick={() => void remove()}
-              className="press h-11 rounded-lg text-callout text-danger hover:bg-danger/10 disabled:opacity-40"
+              className="press h-11 w-full rounded-lg text-foot text-danger hover:bg-danger/10 disabled:opacity-40"
             >
               서재에서 빼기
             </button>
