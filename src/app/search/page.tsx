@@ -176,15 +176,15 @@ function SearchContent({ term, target }: { term: string; target: Target }) {
           범위를 검색창 안에 둔다. 밖에 있으면 검색과 상관없는 필터로 보여서, 눌러야 조건이
           바뀐다는 것을 알 수 없었다. 안에 있으면 "이 범위로 찾는다"가 자리로 읽힌다.
 
-          native select라 모바일에서는 OS 고르개가 뜨고, 키보드와 화면 낭독기도 그대로 된다.
+          접어 두지 않고 셋을 펼쳐 둔다. 드롭다운은 열기 전까지 무엇을 고를 수 있는지 감추고,
+          열린 목록은 브라우저가 그려서 손댈 수도 없다 — 실제로 윈도우 크롬에서 각진 회색
+          목록이 아래 내용 위로 겹쳐 떴다.
         */}
-        <label className="search-scope">
-          <span className="sr-only">검색 범위</span>
-          <select value={scope} onChange={event => pickScope(event.target.value as Target)}>
-            {TARGETS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
-          </select>
-          <Icon name="chevron" className="h-3 w-3 shrink-0 rotate-90 text-faint" />
-        </label>
+        <div className="search-scope" role="group" aria-label="검색 범위">
+          {TARGETS.map(option => <button key={option.value} type="button"
+            data-on={scope === option.value} aria-pressed={scope === option.value}
+            onClick={() => pickScope(option.value)}>{option.label}</button>)}
+        </div>
         <Icon name="search" className="h-5 w-5 shrink-0 text-accent" /><input ref={input} value={query} onChange={e => setQuery(e.target.value)} maxLength={100} aria-label={scope === "AUTHOR" ? "작가 이름" : scope === "TITLE" ? "책 제목" : "책 제목 또는 작가"}
         placeholder={scope === "AUTHOR" ? "작가 이름 검색" : scope === "TITLE" ? "책 제목 검색" : "책 제목 또는 작가 검색"} />{query && <button type="button" aria-label="검색어 지우기" onClick={() => { setQuery(""); input.current?.focus(); }} className="p-1 text-faint"><Icon name="close" className="h-4 w-4" /></button>}<Button type="submit" disabled={busy}>검색</Button></form>
       {needsLogin && <div role="status" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-white px-4 py-3"><p className="text-foot text-muted">책 검색은 로그인 후 이용할 수 있어요.</p><Link href="/login" className="text-foot font-semibold text-accent">로그인하기 →</Link></div>}

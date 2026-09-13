@@ -78,9 +78,10 @@ button:not(:disabled),a {cursor:pointer;}
  .panel {background:white;border:1px solid var(--color-line);border-radius:12px;}
  .search-box {display:flex;align-items:center;gap:12px;background:white;border:1px solid var(--color-line);border-radius:8px;padding:7px 8px 7px 17px;}
  .search-box:focus-within {border-color:#858585;box-shadow:0 0 0 2px #24242408;}
- .search-scope {position:relative;display:flex;align-items:center;gap:4px;flex-shrink:0;margin-right:2px;padding-right:12px;border-right:1px solid var(--color-line);}
- .search-scope select {appearance:none;background:transparent;border:0;outline:none;font-size:15px;font-weight:600;color:var(--color-ink);padding:0 2px 0 0;cursor:pointer;}
- .search-scope:focus-within {outline:2px solid var(--color-ink);outline-offset:3px;border-radius:4px;}
+ .search-scope {display:flex;align-items:center;gap:2px;flex-shrink:0;margin-right:4px;padding-right:10px;border-right:1px solid var(--color-line);}
+ .search-scope button {padding:6px 10px;border-radius:6px;font-size:14px;font-weight:600;color:var(--color-muted);transition:background-color .15s,color .15s;}
+ .search-scope button:hover {background:var(--color-fill);color:var(--color-ink);}
+ .search-scope button[data-on="true"] {background:var(--color-ink);color:white;}
  .search-box input {min-width:0;flex:1;background:transparent;outline:none;font-size:15px;height:38px;}
  .search-box input::placeholder {color:var(--color-faint);}
  .section-heading {display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;}
@@ -157,7 +158,10 @@ button:not(:disabled),a {cursor:pointer;}
  .feed-header a {font-size:16px;padding-bottom:16px;}
  .page-heading h1 {font-size:23px;}.page-heading {margin-bottom:22px;}
  .topic-card {min-height:160px;padding:18px;}.topic-card .topic-art {width:78px;bottom:8px;right:8px;}.topic-card span {font-size:11px;}
- .search-result {gap:14px;align-items:start;}.search-box {gap:8px;padding-left:12px;}
+ .search-result {gap:14px;align-items:start;}
+ /* 좁은 폭에서는 범위가 한 줄을 차지한다. 나란히 두면 입력칸이 67px까지 밀려 글자가 안 보인다. */
+ .search-box {gap:8px;padding:10px 8px 10px 12px;flex-wrap:wrap;}
+ .search-scope {order:-1;width:100%;margin:0 0 4px;padding:0 0 8px;border-right:0;border-bottom:1px solid var(--color-line);}
  .shelf-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 14px;}.shelf-book-stage {padding:20px 24%;}
 }
 @media(prefers-reduced-motion:reduce) {*,*::before,*::after {animation:none!important;transition:none!important;scroll-behavior:auto!important;}}
