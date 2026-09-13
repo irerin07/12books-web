@@ -101,8 +101,8 @@ export default function PostCard({ post, following, followBusy = false, followEr
     </div>
 
     <Link href={`/books/${post.book.id}`} className="post-book">
-      <Cover src={post.book.thumbnailUrl} title={post.book.title} className="w-[48px] shrink-0" radius="rounded-sm" />
-      <div className="min-w-0 flex-1"><h2 className="post-book-title">{post.book.title}</h2><p>{post.book.authors}</p><span className="post-book-more">이 책의 다른 기록</span></div>
+      <Cover src={post.book.thumbnailUrl} title={post.book.title} className="w-[30px] shrink-0" radius="rounded-sm" />
+      <div className="min-w-0 flex-1"><h2 className="post-book-title">{post.book.title}</h2><p>{post.book.authors}</p></div>
       <Icon name="chevron" className="h-4 w-4 shrink-0 text-faint" />
     </Link>
     <footer className="post-actions">

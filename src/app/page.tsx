@@ -5,6 +5,7 @@ import { Empty, LinkButton } from "@/components/ui";
 import Icon from "@/components/Icon";
 
 import FeedHeader from "@/components/FeedHeader";
+import RecordButton from "@/components/RecordButton";
 import Feed from "@/components/Feed";
 
 export default function HomePage() {
@@ -24,7 +25,7 @@ export default function HomePage() {
   </div>;
   return <>
     <div className="content-columns">
-      <FeedHeader active="home" />
+      <FeedHeader active="home" action={<RecordButton />} />
       <div className="min-w-0">
       {/*
         홈은 피드 하나만 한다. 읽는 책은 서재로 갔다 — 성격이 다른 것을 한 화면에 쌓으면

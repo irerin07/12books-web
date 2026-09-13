@@ -59,7 +59,8 @@ export default function PostComposer({ book, currentPage, startOpen = false }: {
   if (!open) {
     return <div className="mt-7">
       <p className="mb-2.5 ml-0.5 text-foot font-medium text-muted">감상 · 남기고 싶을 때만</p>
-      <Button variant="quiet" className="w-full" onClick={() => { setOpen(true); setDone(false); }}>
+      {/* 이 화면에서 사람이 해야 할 일 하나. 회색 버튼으로 두면 무엇을 먼저 할지 말해 주지 않는다. */}
+      <Button className="w-full" size="lg" onClick={() => { setOpen(true); setDone(false); }}>
         {done ? "한 번 더 쓰기" : "감상평 쓰기"}
       </Button>
       {done && <p className="mt-2 text-center text-foot text-accent">감상평을 남겼어요. 타임라인에서 볼 수 있어요.</p>}
