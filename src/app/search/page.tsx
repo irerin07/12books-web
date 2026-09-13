@@ -70,6 +70,13 @@ function SearchContent({ term, target }: { term: string; target: Target }) {
   const [moreBusy, setMoreBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [needsLogin, setNeedsLogin] = useState(Boolean(term && !me));
+  /*
+   * 지금 고른 범위. 주소의 target에서 시작하되, 검색하기 전에도 바꿀 수 있다.
+   *
+   * 전에는 범위를 누르는 것이 곧 재검색이라, 검색어를 먼저 치고 검색한 다음에야 저자로 좁힐
+   * 수 있었다. 저자를 찾으려는 사람은 처음부터 저자를 알고 있다.
+   */
+  const [scope, setScope] = useState<Target>(target);
   const [shelving, setShelving] = useState<string | null>(null);
   /** 전에 읽다 뺀 책을 다시 담으려는 중. 무엇을 할지 고르면 그 값으로 다시 보낸다. */
   const [asking, setAsking] = useState<{ item: BookSearchResult; past: Reading } | null>(null);
@@ -84,8 +91,9 @@ function SearchContent({ term, target }: { term: string; target: Target }) {
     setQuery(q);
     setError(null);
     if (!me) { setNeedsLogin(true); return; }
-    if (q === term) { setBusy(true); setResults(null); setRetry(value => value + 1); }
-    else router.push(searchPath(q, target));
+    // 검색어도 범위도 그대로면 주소가 안 바뀌어 라우팅이 일어나지 않는다. 그때만 직접 다시 부른다.
+    if (q === term && scope === target) { setBusy(true); setResults(null); setRetry(value => value + 1); }
+    else router.push(searchPath(q, scope));
   }
   useEffect(() => {
     if (!term || !me) return;
@@ -156,7 +164,8 @@ function SearchContent({ term, target }: { term: string; target: Target }) {
     <div className="content-columns">
       <header className="page-heading"><div><h1>검색</h1></div></header>
       <div className="min-w-0">
-      <form role="search" onSubmit={e => { e.preventDefault(); void search(query); }} className="search-box"><Icon name="search" className="h-5 w-5 shrink-0 text-accent" /><input ref={input} value={query} onChange={e => setQuery(e.target.value)} maxLength={100} aria-label="책 제목 또는 작가" placeholder="책 제목 또는 작가 검색" />{query && <button type="button" aria-label="검색어 지우기" onClick={() => { setQuery(""); input.current?.focus(); }} className="p-1 text-faint"><Icon name="close" className="h-4 w-4" /></button>}<Button type="submit" disabled={busy}>검색</Button></form>
+      <form role="search" onSubmit={e => { e.preventDefault(); void search(query); }} className="search-box"><Icon name="search" className="h-5 w-5 shrink-0 text-accent" /><input ref={input} value={query} onChange={e => setQuery(e.target.value)} maxLength={100} aria-label={scope === "AUTHOR" ? "작가 이름" : scope === "TITLE" ? "책 제목" : "책 제목 또는 작가"}
+        placeholder={scope === "AUTHOR" ? "작가 이름 검색" : scope === "TITLE" ? "책 제목 검색" : "책 제목 또는 작가 검색"} />{query && <button type="button" aria-label="검색어 지우기" onClick={() => { setQuery(""); input.current?.focus(); }} className="p-1 text-faint"><Icon name="close" className="h-4 w-4" /></button>}<Button type="submit" disabled={busy}>검색</Button></form>
       {/*
         범위 토글. 검색창 바로 아래에 둔다 — 무엇을 찾는지 정하고 나서 치는 것이 아니라,
         쳐 보고 너무 많으면 좁히는 순서가 실제 사람의 순서다.
@@ -165,8 +174,13 @@ function SearchContent({ term, target }: { term: string; target: Target }) {
       */}
       <div className="mt-3"><div className="segmented">
         {TARGETS.map(option => <button key={option.value} type="button"
-          data-on={target === option.value} aria-pressed={target === option.value}
-          onClick={() => { const q = query.trim() || term; if (q) router.push(searchPath(q, option.value)); }}
+          data-on={scope === option.value} aria-pressed={scope === option.value}
+          onClick={() => {
+            setScope(option.value);
+            /* 이미 찾아 둔 결과가 있으면 검색어를 또 치게 하지 않는다. 아직 없으면 고르기만 한다. */
+            const q = query.trim() || term;
+            if (q) router.push(searchPath(q, option.value));
+          }}
           className="segmented-item px-4 py-2 text-callout font-medium">
           {option.label}
         </button>)}
