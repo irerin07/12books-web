@@ -86,6 +86,11 @@ export default function ScopeSelect<T extends string>({ value, options, onChange
           className="scope-option"
           onClick={() => pick(option.value)}
           onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); pick(option.value); } }}>
+          {/*
+            고른 것은 체크로 말한다. 검게 채우면 "지금 이것"이 "이걸 누르세요"와 같은 무게가
+            되어, 한 화면에 주 행동이 둘로 보인다 — 옆의 검색 버튼과 다툰다.
+          */}
+          <span className="scope-check">{option.value === value && <Icon name="check" className="h-3.5 w-3.5" />}</span>
           {option.label}
         </button>
       </li>)}
