@@ -217,7 +217,11 @@ export default function ReadingSheet({
             </div>
           </div>
 
-          <PostComposer book={book} currentPage={reading.currentPage} />
+          {/*
+            이 시트에서 사람이 하러 온 일은 진도 적기다. 감상평도 할 수 있지만 주 행동은 아니라
+            채우지 않는다 — 검은 버튼이 둘이면 무엇을 먼저 할지 다시 흐려진다.
+          */}
+          <PostComposer book={book} currentPage={reading.currentPage} emphasis="quiet" />
 
           {error ? (
             <p className="mt-5 rounded-lg bg-danger/10 px-4 py-3 text-callout text-danger">
@@ -226,7 +230,8 @@ export default function ReadingSheet({
           ) : null}
 
           <div className="mt-7 flex flex-col gap-2">
-            <Button variant="quiet" size="lg" onClick={onClose} className="w-full">
+            {/* 테두리를 전체 너비로 두르면 빈 입력칸처럼 보인다. 시트의 닫기는 어디서나 글자다. */}
+            <Button variant="plain" size="lg" onClick={onClose} className="w-full">
               닫기
             </Button>
             <button

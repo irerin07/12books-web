@@ -19,11 +19,18 @@ const MAX_CONTENT = 1000;
  * readingId는 보내지 않는다. 서버가 (나, 책)으로 찾아 붙이거나 만든다 — 화면이 보내게 하면
  * 남의 기록 id를 실어 보내는 경로가 열린다.
  */
-export default function PostComposer({ book, currentPage, startOpen = false }: {
+export default function PostComposer({ book, currentPage, startOpen = false, emphasis = "primary" }: {
   book: Book;
   currentPage: number;
   /** 책을 이미 고르고 들어온 자리(기록하기 시트)에서는 펼친 채로 연다. */
   startOpen?: boolean;
+  /**
+   * 이 자리에서 감상평 쓰기가 주 행동인지.
+   *
+   * 책 화면에서는 그것 하나 하러 오므로 채운다. 읽기 시트에서는 진도 적기가 주 행동이라
+   * 채우지 않는다 — 한 화면에 채운 버튼이 둘이면 어느 쪽을 먼저 할지 말해 주지 못한다.
+   */
+  emphasis?: "primary" | "quiet";
 }) {
   const [open, setOpen] = useState(startOpen);
   const [content, setContent] = useState("");
@@ -59,8 +66,7 @@ export default function PostComposer({ book, currentPage, startOpen = false }: {
   if (!open) {
     return <div className="mt-7">
       <p className="mb-2.5 ml-0.5 text-foot font-medium text-muted">감상 · 남기고 싶을 때만</p>
-      {/* 이 화면에서 사람이 해야 할 일 하나. 회색 버튼으로 두면 무엇을 먼저 할지 말해 주지 않는다. */}
-      <Button className="w-full" size="lg" onClick={() => { setOpen(true); setDone(false); }}>
+      <Button variant={emphasis} className="w-full" size="lg" onClick={() => { setOpen(true); setDone(false); }}>
         {done ? "한 번 더 쓰기" : "감상평 쓰기"}
       </Button>
       {done && <p className="mt-2 text-center text-foot text-accent">감상평을 남겼어요. 타임라인에서 볼 수 있어요.</p>}
