@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import type { CursorPage, LibraryItem } from "@/lib/types";
@@ -30,6 +31,16 @@ export default function RecordSheet({ onClose }: { onClose: () => void }) {
       .catch(() => { if (active) setError(true); });
     return () => { active = false; };
   }, [me]);
+
+  /*
+   * 시트 안의 링크로 화면을 옮기면 시트도 같이 닫는다.
+   *
+   * 이 시트는 사이드바(Nav)가 들고 있어서 페이지를 옮겨도 그대로 살아 있다. "내 서재 열기"를
+   * 누르면 뒤에서는 서재로 갔는데 앞은 여전히 가려진 채였다.
+   */
+  const pathname = usePathname();
+  const openedAt = useRef(pathname);
+  useEffect(() => { if (pathname !== openedAt.current) onClose(); }, [pathname, onClose]);
 
   useEffect(() => {
     const overflow = document.body.style.overflow;
