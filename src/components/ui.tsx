@@ -12,9 +12,11 @@ export function LinkButton({href,children}:{href:string;children:React.ReactNode
   return <Link href={href} className="press inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-md bg-ink px-4 text-foot font-semibold text-white hover:bg-[#404040]">{children}</Link>;
 }
 export function FieldGroup({children}:{children:React.ReactNode}) {return <div className="space-y-5">{children}</div>;}
-export function Field({label,error,...props}:React.InputHTMLAttributes<HTMLInputElement>&{label:string;error?:string|null}) {
+/** hint는 라벨이 다 못 하는 말을 맡는다 — 그 값이 어디에 쓰이는지, 나중에 바꿀 수 있는지. */
+export function Field({label,hint,error,...props}:React.InputHTMLAttributes<HTMLInputElement>&{label:string;hint?:string;error?:string|null}) {
   const id=useId();
-  return <div><label htmlFor={id} className="mb-2 block text-foot font-semibold">{label}</label><input {...props} id={id} aria-invalid={!!error} aria-describedby={error?`${id}-error`:undefined} className={`field ${props.className??""}`} />{error&&<p id={`${id}-error`} className="mt-1.5 text-cap text-danger">{error}</p>}</div>;
+  const hintId=hint?`${id}-hint`:undefined;
+  return <div><label htmlFor={id} className="mb-2 block text-foot font-semibold">{label}</label><input {...props} id={id} aria-invalid={!!error} aria-describedby={[error?`${id}-error`:null,hintId].filter(Boolean).join(" ")||undefined} className={`field ${props.className??""}`} />{hint&&<p id={hintId} className="mt-1.5 text-cap text-muted">{hint}</p>}{error&&<p id={`${id}-error`} className="mt-1.5 text-cap text-danger">{error}</p>}</div>;
 }
 /**
  * 표지 한 장.
