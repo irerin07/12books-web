@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import type { CursorPage, LibraryItem } from "@/lib/types";
-import { Button, Cover, Empty, LinkButton, Spinner } from "./ui";
+import { Button, Cover, LinkButton, Spinner } from "./ui";
 import PostComposer from "./PostComposer";
 
 /**
@@ -58,11 +58,17 @@ export default function RecordSheet({ onClose }: { onClose: () => void }) {
         <h2 className="text-headline">어떤 책을 읽으셨나요</h2>
         <p className="mt-1.5 text-foot text-muted">읽는 중인 책에 바로 기록할 수 있어요.</p>
 
-        {error ? <Empty title="책을 불러오지 못했어요" hint="잠시 후 다시 시도해 주세요." />
+        {error ? <p className="py-10 text-center text-foot text-muted">책을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</p>
           : items === null ? <Spinner />
-          : items.length === 0 ? <Empty title="읽는 중인 책이 없어요"
-              hint="서재의 책을 ‘읽는 중’으로 바꾸면 여기에 나타나요."
-              action={<LinkButton href="/library">내 서재 열기</LinkButton>} />
+          /*
+            시트 안에서는 Empty를 쓰지 않는다. 그것은 페이지 배경 위에 놓으라고 만든 것이라
+            테두리와 흰 배경을 갖고 있어, 흰 시트 안에 넣으면 사각형이 겹쳐 보인다.
+          */
+          : items.length === 0 ? <div className="py-10 text-center">
+              <p className="text-headline">읽는 중인 책이 없어요</p>
+              <p className="mt-2 text-foot text-muted">서재의 책을 ‘읽는 중’으로 바꾸면 여기에 나타나요.</p>
+              <div className="mt-5"><LinkButton href="/library">내 서재 열기</LinkButton></div>
+            </div>
           : <ul className="mt-4 space-y-1">{items.map(item => <li key={item.reading.id}>
               <button onClick={() => setPicked(item)} className="flex w-full items-center gap-3 rounded-lg p-2 text-left hover:bg-fill">
                 <Cover src={item.book.thumbnailUrl} title={item.book.title} className="w-[40px] shrink-0" radius="rounded-sm" />
@@ -75,7 +81,8 @@ export default function RecordSheet({ onClose }: { onClose: () => void }) {
               </button>
             </li>)}</ul>}
 
-        <Button variant="quiet" className="mt-6 w-full" onClick={onClose}>닫기</Button>
+        {/* 테두리를 두르면 빈 입력칸처럼 보이고, 주 행동과 크기가 맞먹는다. 글자로만 둔다. */}
+        <Button variant="plain" className="mt-5 w-full" onClick={onClose}>닫기</Button>
       </>}
     </div>
   </div>;
