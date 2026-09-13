@@ -166,6 +166,12 @@ button:not(:disabled),a {cursor:pointer;}
  .page-heading h1 {font-size:23px;}.page-heading {margin-bottom:22px;}
  .topic-card {min-height:160px;padding:18px;}.topic-card .topic-art {width:78px;bottom:8px;right:8px;}.topic-card span {font-size:11px;}
  .search-result {gap:14px;align-items:start;}.search-box {gap:8px;padding-left:12px;}
+ /*
+   좁은 폭에서는 목록을 글자에 맞춰 줄인다. "전체·제목·저자"는 두 자인데 150px을 잡아 두면
+   오른쪽이 비어 보인다. 다만 항목 높이는 줄이지 않는다 — 손가락으로 누르는 자리다.
+ */
+ .scope-list {min-width:118px;padding:4px;top:calc(100% + 6px);}
+ .scope-option {padding-left:8px;padding-right:10px;}
  .shelf-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 14px;}.shelf-book-stage {padding:20px 24%;}
 }
 @media(prefers-reduced-motion:reduce) {*,*::before,*::after {animation:none!important;transition:none!important;scroll-behavior:auto!important;}}
