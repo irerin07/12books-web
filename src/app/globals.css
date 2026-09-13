@@ -171,6 +171,14 @@ button:not(:disabled),a {cursor:pointer;}
 .app-sidebar .account-link>.avatar {background:#f4f4f4;color:#424242;border:1px solid #e5e5e5;font-size:12px;}
 .guest-top {display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--color-muted);padding-bottom:24px;border-bottom:1px solid var(--color-line);}
 .guest-top a {display:inline-flex;align-items:center;gap:10px;color:var(--color-ink);}
+/*
+  모바일에는 앱 상단바가 이미 로고와 로그인을 들고 있다. 손님 홈이 제 상단줄을 하나 더 두면
+  같은 화면에 "로그인"이 두 번, 그것도 위아래로 붙어 나온다.
+
+  이 규칙은 .guest-top 기본 선언보다 뒤에 있어야 한다 — 미디어 쿼리는 특정도를 올리지 않아서,
+  앞에 두면 뒤에 오는 display:flex가 이긴다. 한 번 그렇게 넣었다가 화면에서 확인하고 옮겼다.
+*/
+@media(max-width:767px) {.guest-top {display:none;}}
 .guest-intro {padding:68px 0 60px;}
 .guest-eyebrow {font-size:13px;color:var(--color-muted);margin-bottom:22px;}
 .guest-intro h1 {font-size:44px;line-height:1.35;font-weight:650;letter-spacing:-1.8px;word-break:keep-all;}
