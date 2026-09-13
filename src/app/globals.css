@@ -101,19 +101,19 @@ button:not(:disabled),a {cursor:pointer;}
  .empty-symbol {display:grid;place-items:center;width:56px;height:56px;background:var(--color-fill);border-radius:8px;color:var(--color-muted);margin-bottom:18px;}
  .reading-row {display:flex;align-items:center;gap:18px;padding:20px;background:white;border:1px solid var(--color-line);border-radius:12px;}
  .follow-row {display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--color-line);}
- .feed-header {border-bottom:1px solid var(--color-line);margin-bottom:2px;}
+ .feed-header {display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border-bottom:1px solid var(--color-line);margin-bottom:2px;}
  .feed-header nav {display:flex;gap:28px;}
  .feed-header a {display:block;padding:0 0 20px;font-size:17px;font-weight:600;color:var(--color-muted);border-bottom:2px solid transparent;}
  .feed-header a[aria-current="page"] {color:var(--color-ink);border-bottom-color:var(--color-ink);}
  .post-card {padding:24px;border:1px solid #dedede;border-radius:10px;background:var(--color-surface);margin-top:20px;}
  .post-author {display:flex;align-items:center;gap:12px;}
  .post-author .avatar {width:40px;height:40px;background:#f0f0ee;color:#555;font-size:15px;}
- .post-author-name {font-size:15px;font-weight:650;overflow-wrap:anywhere;}
+ .post-author-name {font-size:14px;font-weight:650;overflow-wrap:anywhere;}
  .post-author-name:hover {text-decoration:underline;text-underline-offset:3px;}
  .post-time {font-size:13px;color:var(--color-muted);}
  .post-reading-context {font-size:12px;line-height:1.5;color:var(--color-muted);margin-top:3px;}
  .post-content-area {margin:20px 0;}
- .post-prose {font-size:17px;line-height:1.8;letter-spacing:-.015em;white-space:pre-wrap;word-break:normal;overflow-wrap:anywhere;}
+ .post-prose {font-size:19px;line-height:1.75;letter-spacing:-.015em;white-space:pre-wrap;word-break:normal;overflow-wrap:anywhere;}
  .post-prose-clamped {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:7;overflow:hidden;}
  .post-text-action {font-size:13px;color:var(--color-muted);padding:8px 0;margin-right:16px;}
  .post-text-action:hover {color:var(--color-ink);text-decoration:underline;}
@@ -121,10 +121,10 @@ button:not(:disabled),a {cursor:pointer;}
  .spoiler-notice>p {font-size:13px;color:var(--color-muted);margin-top:7px;line-height:1.7;}
  .spoiler-toggle {display:inline-flex;align-items:center;gap:8px;border:1px solid #dcdcdc;background:white;border-radius:6px;padding:8px 12px;font-size:13px;font-weight:600;margin-top:14px;}
  .spoiler-toggle:hover {background:var(--color-fill);}
- .post-book {display:flex;align-items:center;gap:14px;padding:14px;border:1px solid transparent;background:var(--color-fill);border-radius:6px;transition:background-color .15s;}
- .post-book:hover {background:var(--color-fill-strong);}
- .post-book-title {font-size:14px;line-height:1.5;font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
- .post-book p {font-size:12px;color:var(--color-muted);margin-top:3px;}
+ .post-book {display:flex;align-items:center;gap:10px;padding:8px 10px;margin-left:-10px;border-radius:6px;transition:background-color .15s;}
+ .post-book:hover {background:var(--color-fill);}
+ .post-book-title {font-size:13px;line-height:1.4;font-weight:600;color:var(--color-muted);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
+ .post-book p {font-size:12px;color:var(--color-faint);margin-top:1px;}
  .post-book-more {font-size:11px;color:var(--color-faint);display:block;margin-top:7px;}
  .post-actions {display:flex;gap:6px;margin-top:14px;}
  .post-action {display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 10px;border-radius:8px;color:var(--color-muted);font-size:13px;transition:background .15s,color .15s;}
@@ -150,7 +150,7 @@ button:not(:disabled),a {cursor:pointer;}
  .mobile-nav a {flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:10px;color:var(--color-muted);}
  .mobile-nav a[aria-current="page"] {color:var(--color-ink);font-weight:700;}
  .post-card {padding:20px 16px;margin-top:16px;border-radius:8px;}
- .post-prose {font-size:16px;line-height:1.8;}
+ .post-prose {font-size:17px;line-height:1.75;}
  .feed-header a {font-size:16px;padding-bottom:16px;}
  .page-heading h1 {font-size:23px;}.page-heading {margin-bottom:22px;}
  .topic-card {min-height:160px;padding:18px;}.topic-card .topic-art {width:78px;bottom:8px;right:8px;}.topic-card span {font-size:11px;}

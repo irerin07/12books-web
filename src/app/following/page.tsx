@@ -2,6 +2,7 @@
 import { useSession } from "@/lib/session";
 import { Empty, LinkButton } from "@/components/ui";
 import FeedHeader from "@/components/FeedHeader";
+import RecordButton from "@/components/RecordButton";
 import Feed from "@/components/Feed";
 
 /**
@@ -18,7 +19,7 @@ export default function FollowingPage() {
 
   return <>
     <div className="content-columns">
-      <FeedHeader active="following" />
+      <FeedHeader active="following" action={<RecordButton />} />
       <div className="min-w-0">
       {/* 감상평 조회에도 로그인이 필요하다(SecurityConfig는 /auth/**만 연다). */}
       {me
