@@ -8,6 +8,7 @@ import { parseHistory, readHistory, rememberSearch, subscribeHistory, writeHisto
 import type { Book, BookSearchPage, BookSearchResult, Reading } from "@/lib/types";
 import { Button, Cover, Empty, Spinner } from "@/components/ui";
 import ResumeSheet from "@/components/ResumeSheet";
+import ScopeSelect from "@/components/ScopeSelect";
 import Icon from "@/components/Icon";
 import TopicArt from "@/components/TopicArt";
 
@@ -176,15 +177,10 @@ function SearchContent({ term, target }: { term: string; target: Target }) {
           범위를 검색창 안에 둔다. 밖에 있으면 검색과 상관없는 필터로 보여서, 눌러야 조건이
           바뀐다는 것을 알 수 없었다. 안에 있으면 "이 범위로 찾는다"가 자리로 읽힌다.
 
-          native select라 모바일에서는 OS 고르개가 뜨고, 키보드와 화면 낭독기도 그대로 된다.
+          native select는 쓰지 않는다. 열린 목록을 브라우저가 그려서 우리 색과 모서리가 안 먹고,
+          윈도우에서는 각진 회색 목록이 화면 위에 겹쳐 떴다. ScopeSelect가 그 자리를 대신한다.
         */}
-        <label className="search-scope">
-          <span className="sr-only">검색 범위</span>
-          <select value={scope} onChange={event => pickScope(event.target.value as Target)}>
-            {TARGETS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
-          </select>
-          <Icon name="chevron" className="h-3 w-3 shrink-0 rotate-90 text-faint" />
-        </label>
+        <ScopeSelect label="검색 범위" value={scope} options={TARGETS} onChange={pickScope} />
         <Icon name="search" className="h-5 w-5 shrink-0 text-accent" /><input ref={input} value={query} onChange={e => setQuery(e.target.value)} maxLength={100} aria-label={scope === "AUTHOR" ? "작가 이름" : scope === "TITLE" ? "책 제목" : "책 제목 또는 작가"}
         placeholder={scope === "AUTHOR" ? "작가 이름 검색" : scope === "TITLE" ? "책 제목 검색" : "책 제목 또는 작가 검색"} />{query && <button type="button" aria-label="검색어 지우기" onClick={() => { setQuery(""); input.current?.focus(); }} className="p-1 text-faint"><Icon name="close" className="h-4 w-4" /></button>}<Button type="submit" disabled={busy}>검색</Button></form>
       {needsLogin && <div role="status" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-white px-4 py-3"><p className="text-foot text-muted">책 검색은 로그인 후 이용할 수 있어요.</p><Link href="/login" className="text-foot font-semibold text-accent">로그인하기 →</Link></div>}
