@@ -115,6 +115,13 @@ button:not(:disabled),a {cursor:pointer;}
  .empty-symbol {display:grid;place-items:center;width:56px;height:56px;background:var(--color-fill);border-radius:8px;color:var(--color-muted);margin-bottom:18px;}
  .reading-row {display:flex;align-items:center;gap:18px;padding:20px;background:white;border:1px solid var(--color-line);border-radius:12px;}
  /* 알림 한 줄. 읽은 것도 남으므로 지우는 대신 구분한다 — 안 읽은 것에만 점과 진한 글자. */
+ /* 신고 사유. 라디오지만 네모 하나로 그리면 뭘 고른 건지 멀리서 안 보인다. */
+ .report-reason {display:flex;width:100%;align-items:flex-start;gap:11px;padding:11px 12px;border:1px solid transparent;border-radius:8px;text-align:left;}
+ .report-reason:hover {background:var(--color-fill);}
+ .report-reason.is-on {border-color:var(--color-ink);background:var(--color-fill);}
+ .report-reason-mark {flex-shrink:0;width:17px;height:17px;margin-top:3px;border:1.5px solid var(--color-line);border-radius:50%;}
+ .report-reason.is-on .report-reason-mark {border-color:var(--color-ink);border-width:5px;}
+
  .notice-list {margin-top:4px;}
  .notice-row {border-bottom:1px solid var(--color-line);}
  .notice-hit {display:flex;width:100%;align-items:flex-start;gap:13px;padding:14px 10px;margin:0 -10px;text-align:left;border-radius:8px;}

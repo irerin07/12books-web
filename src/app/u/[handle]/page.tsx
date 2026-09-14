@@ -9,6 +9,7 @@ import LibraryGrid from "@/components/LibraryGrid";
 import ReadingSheet from "@/components/ReadingSheet";
 import { Button, Empty, Spinner } from "@/components/ui";
 import FollowButton from "@/components/FollowButton";
+import ReportSheet from "@/components/ReportSheet";
 import Feed from "@/components/Feed";
 import ProfileEditSheet from "@/components/ProfileEditSheet";
 import { LinkButton } from "@/components/ui";
@@ -37,6 +38,7 @@ export default function ProfilePage({
    */
   const [tab, setTab] = useState<"library" | "posts">("library");
   const [editing, setEditing] = useState(false);
+  const [reporting, setReporting] = useState(false);
 
   const fetchPage = useCallback(
     async (next: number | null) => {
@@ -96,6 +98,9 @@ export default function ProfilePage({
   return (
     <div>
       {/* 인스타의 프로필 골격 — 아바타, 숫자 줄, 소개, 격자. 다만 담기는 것은 표지다. */}
+      {reporting && <ReportSheet target={`/api/v1/users/${profile.handle}/reports`} what="사용자"
+        onClose={() => setReporting(false)} />}
+
       <header className="profile-heading">
         <div className="h-[88px] w-[88px] shrink-0 overflow-hidden rounded-full bg-fill shadow-card ring-1 ring-line sm:h-[88px] sm:w-[88px]">
           {profile.avatarUrl ? (
@@ -143,7 +148,8 @@ export default function ProfilePage({
                 </Button>
               </>
             ) : me ? (
-              /* 팔로워 수는 버튼을 누른 그 자리에서 함께 움직인다. 다시 불러오지 않는다. */
+              <>
+              {/* 팔로워 수는 버튼을 누른 그 자리에서 함께 움직인다. 다시 불러오지 않는다. */}
               <FollowButton
                 handle={profile.handle}
                 following={profile.isFollowing}
@@ -155,6 +161,9 @@ export default function ProfilePage({
                   )
                 }
               />
+              {/* 신고는 주 행동이 아니다. 팔로우 옆에 글자로만 둔다. */}
+              <Button variant="plain" onClick={() => setReporting(true)}>신고</Button>
+              </>
             ) : null}
           </div>
         </div>
