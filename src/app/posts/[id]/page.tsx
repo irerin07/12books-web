@@ -37,5 +37,6 @@ export default function PostPage({ params }: { params: Promise<{ id: string }> }
   if (error) return <Empty title="감상평을 불러오지 못했어요" hint="잠시 후 다시 시도해 주세요." />;
   if (!post) return <Spinner />;
 
-  return <PostCard post={post} />;
+  /* 여기서 지우면 이 화면이 가리키던 것이 없어진다. 목록처럼 한 줄만 내릴 수는 없다. */
+  return <PostCard post={post} onRemoved={() => setGone(true)} />;
 }
