@@ -1,6 +1,6 @@
 "use client";
 import type { Reading } from "@/lib/types";
-import { Button } from "./ui";
+import { Button, SheetClose } from "./ui";
 
 /**
  * 전에 읽다 뺀 책을 다시 담을 때 무엇을 할지 묻는다.
@@ -27,7 +27,8 @@ export default function ResumeSheet({ past, title, busy, onPick, onClose }: {
     <button aria-label="닫기" onClick={onClose} className="absolute inset-0 animate-[fade-in_0.25s_ease] bg-black/40 backdrop-blur-[2px]" />
     <div role="dialog" aria-modal="true" aria-label="다시 담기"
       className="relative w-full animate-[sheet-in_0.4s_var(--ease-spring)] rounded-t-xl bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-sheet sm:max-w-[420px] sm:rounded-xl sm:pb-5">
-      <h2 className="text-headline">전에 읽던 책이에요</h2>
+      <SheetClose onClose={onClose} />
+      <h2 className="text-headline pr-8">전에 읽던 책이에요</h2>
       {/*
         제목과 진도를 한 문장으로 엮지 않는다. "사피엔스을(를)"처럼 조사가 어긋나고,
         받침을 따져 고르는 코드를 화면에 두는 것은 이 한 줄이 감당할 일이 아니다.
@@ -46,9 +47,6 @@ export default function ResumeSheet({ past, title, busy, onPick, onClose }: {
         </Button>
         {/* 새로 읽기를 골라도 지난 기록은 지워지지 않는다. 서재에 보이지 않을 뿐이다. */}
         <p className="mt-1 text-center text-cap text-faint">새로 읽어도 지난 기록은 그대로 남아요.</p>
-        <button onClick={onClose} disabled={busy} className="press mt-1 h-10 rounded-lg text-callout text-muted">
-          그만두기
-        </button>
       </div>
     </div>
   </div>;

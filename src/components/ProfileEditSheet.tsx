@@ -2,7 +2,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { ApiError, api } from "@/lib/api";
 import type { Profile } from "@/lib/types";
-import { Button } from "./ui";
+import { Button, SheetClose } from "./ui";
 
 /* 서버가 받는 길이(UpdateProfileRequest). 넘기면 C001로 돌아온다. */
 const MAX = { displayName: 50, bio: 200, avatarUrl: 500 };
@@ -74,8 +74,10 @@ export default function ProfileEditSheet({
         <span className="h-[5px] w-9 rounded-full bg-fill-strong" />
       </div>
 
+      <SheetClose onClose={onClose} />
+
       <div className="px-5 pt-3 sm:pt-6">
-        <h2 id={titleId} className="text-headline">프로필 수정</h2>
+        <h2 id={titleId} className="text-headline pr-8">프로필 수정</h2>
         {/* 바꿀 수 없는 것은 칸이 아니라 설명으로 둔다. 무엇인지도 함께 적는다. */}
         <p className="mt-1.5 text-foot text-muted">프로필 주소 @{profile.handle} · 바꿀 수 없어요</p>
 
@@ -105,12 +107,10 @@ export default function ProfileEditSheet({
         {error instanceof ApiError && error.fieldErrors.length === 0 &&
           <p className="mt-4 rounded-lg bg-danger/10 px-4 py-3 text-callout text-danger">{error.message}</p>}
 
-        <div className="mt-7 flex gap-2">
-          <Button variant="quiet" size="lg" className="flex-1" onClick={onClose}>그만두기</Button>
-          <Button size="lg" className="flex-1" disabled={busy} onClick={() => void save()}>
-            {busy ? "저장 중…" : "저장"}
-          </Button>
-        </div>
+        {/* 주 행동 하나만 남긴다. 나가는 길은 위의 X다 — 시트마다 같은 자리에 있다. */}
+        <Button size="lg" className="mt-7 w-full" disabled={busy} onClick={() => void save()}>
+          {busy ? "저장 중…" : "저장"}
+        </Button>
       </div>
     </div>
   </div>;

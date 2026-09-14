@@ -1,9 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import type { CursorPage, LibraryItem } from "@/lib/types";
-import { Button, Cover, LinkButton, Spinner } from "./ui";
+import { Cover, LinkButton, SheetClose, Spinner } from "./ui";
 import PostComposer from "./PostComposer";
 
 /**
@@ -31,6 +32,16 @@ export default function RecordSheet({ onClose }: { onClose: () => void }) {
     return () => { active = false; };
   }, [me]);
 
+  /*
+   * 시트 안의 링크로 화면을 옮기면 시트도 같이 닫는다.
+   *
+   * 이 시트는 사이드바(Nav)가 들고 있어서 페이지를 옮겨도 그대로 살아 있다. "내 서재 열기"를
+   * 누르면 뒤에서는 서재로 갔는데 앞은 여전히 가려진 채였다.
+   */
+  const pathname = usePathname();
+  const openedAt = useRef(pathname);
+  useEffect(() => { if (pathname !== openedAt.current) onClose(); }, [pathname, onClose]);
+
   useEffect(() => {
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -44,6 +55,8 @@ export default function RecordSheet({ onClose }: { onClose: () => void }) {
 
     <div role="dialog" aria-modal="true" aria-label="기록하기"
       className="relative max-h-[88dvh] w-full animate-[sheet-in_0.4s_var(--ease-spring)] overflow-y-auto rounded-t-xl bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-sheet sm:max-w-[440px] sm:rounded-xl sm:pb-5">
+      <SheetClose onClose={onClose} />
+
       {picked ? <>
         <button onClick={() => setPicked(null)} className="text-foot text-muted hover:text-ink">← 다른 책 고르기</button>
         <div className="mt-4 flex items-center gap-3">
@@ -55,7 +68,7 @@ export default function RecordSheet({ onClose }: { onClose: () => void }) {
         </div>
         <PostComposer book={picked.book} currentPage={picked.reading.currentPage} startOpen />
       </> : <>
-        <h2 className="text-headline">어떤 책을 읽으셨나요</h2>
+        <h2 className="text-headline pr-8">어떤 책을 읽으셨나요</h2>
         <p className="mt-1.5 text-foot text-muted">읽는 중인 책에 바로 기록할 수 있어요.</p>
 
         {error ? <p className="py-10 text-center text-foot text-muted">책을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</p>
@@ -80,9 +93,6 @@ export default function RecordSheet({ onClose }: { onClose: () => void }) {
                 </span>
               </button>
             </li>)}</ul>}
-
-        {/* 테두리를 두르면 빈 입력칸처럼 보이고, 주 행동과 크기가 맞먹는다. 글자로만 둔다. */}
-        <Button variant="plain" className="mt-5 w-full" onClick={onClose}>닫기</Button>
       </>}
     </div>
   </div>;

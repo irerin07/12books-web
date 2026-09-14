@@ -4,6 +4,22 @@ import Link from "next/link";
 import { useId, useState } from "react";
 import Icon from "./Icon";
 
+/**
+ * 시트·모달을 닫는 단 하나의 방법. 오른쪽 위 X다.
+ *
+ * 시트마다 닫는 자리가 다르면 사람은 매번 다시 찾는다. 바닥의 "닫기"는 더 나쁜데,
+ * 바로 옆에 "서재에서 빼기"나 "저장"이 서면 그냥 나가는 일과 되돌리기 어려운 일이
+ * 같은 크기의 글자로 보이기 때문이다. 그래서 닫기는 본문 밖으로 빼서 한 자리에 고정한다.
+ *
+ * 모든 시트는 이것과 배경 누르기, Esc 세 가지로만 닫힌다.
+ */
+export function SheetClose({onClose}:{onClose:()=>void}) {
+  return <button type="button" onClick={onClose} aria-label="닫기"
+    className="press absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full text-muted hover:bg-fill hover:text-ink">
+    <Icon name="close" className="h-4 w-4" />
+  </button>;
+}
+
 export function Button({children,variant="primary",size="md",...props}:React.ButtonHTMLAttributes<HTMLButtonElement>&{variant?:"primary"|"quiet"|"plain";size?:"md"|"lg"}) {
   const look={primary:"bg-ink text-white hover:bg-[#404040]",quiet:"border border-line bg-white text-ink hover:bg-fill",plain:"text-ink hover:bg-fill"}[variant];
   return <button {...props} className={`press inline-flex items-center justify-center whitespace-nowrap rounded-md font-semibold disabled:cursor-not-allowed disabled:opacity-45 ${size==="lg"?"h-11 px-5 text-callout":"h-9 px-3.5 text-foot"} ${look} ${props.className??""}`}>{children}</button>;
