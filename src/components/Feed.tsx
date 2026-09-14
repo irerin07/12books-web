@@ -44,6 +44,9 @@ export default function Feed({ path, empty }: { path: string; empty: React.React
     } catch (e) {
       if (e instanceof ApiError && e.code === "F002") {
         setRelationships(prev => ({ ...prev, [handle]: true }));
+      } else if (e instanceof ApiError && e.rateLimited) {
+        /* 한도에 닿았다. 몇 초 뒤인지는 서버가 알려준다 — 그대로 옮겨 적는다. */
+        setFollowErrors(prev => ({ ...prev, [handle]: `팔로우가 너무 잦아요. ${e.retryAfter}초 뒤에 다시 시도해 주세요.` }));
       } else {
         setFollowErrors(prev => ({ ...prev, [handle]: "팔로우하지 못했어요. 다시 시도해 주세요." }));
       }

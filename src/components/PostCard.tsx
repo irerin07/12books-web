@@ -7,6 +7,7 @@ import { Cover } from "./ui";
 import Icon from "./Icon";
 import { useSession } from "@/lib/session";
 import PostComments from "./PostComments";
+import { useCooldown } from "@/lib/cooldown";
 
 function since(iso: string) {
   const written = new Date(iso);
@@ -36,6 +37,7 @@ export default function PostCard({ post, following, followBusy = false, followEr
   const [liked, setLiked] = useState(post.likedByMe);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [likeBusy, setLikeBusy] = useState(false);
+  const cooldown = useCooldown();
   const [commentCount, setCommentCount] = useState(post.commentCount);
   const [showComments, setShowComments] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -68,6 +70,8 @@ export default function PostCard({ post, following, followBusy = false, followEr
        */
       if (!(e instanceof ApiError && e.code === "P002")) {
         setLiked(!next); setLikeCount(count => count + (next ? -1 : 1));
+        /* 429면 서버가 받지 않았다. 되돌린 뒤 잠시 못 누르게 한다 — 곧장 또 누르면 또 429다. */
+        cooldown.take(e);
       }
     } finally { setLikeBusy(false); }
   }
@@ -130,8 +134,10 @@ export default function PostCard({ post, following, followBusy = false, followEr
       <Icon name="chevron" className="h-4 w-4 shrink-0 text-faint" />
     </Link>
     <footer className="post-actions">
-      <button onClick={() => void toggleLike()} disabled={likeBusy} aria-pressed={liked}
-        aria-label={liked ? "좋아요 취소" : "좋아요"} className={`post-action ${liked ? "is-on" : ""}`}>
+      <button onClick={() => void toggleLike()} disabled={likeBusy || cooldown.locked} aria-pressed={liked}
+        aria-label={liked ? "좋아요 취소" : "좋아요"}
+        title={cooldown.locked ? `요청이 너무 잦아요. ${cooldown.left}초 뒤에 다시 누를 수 있어요.` : undefined}
+        className={`post-action ${liked ? "is-on" : ""}`}>
         <Icon name={liked ? "heart-filled" : "heart"} className="h-[18px] w-[18px]" />
         {likeCount > 0 && <span className="tabular-nums">{likeCount}</span>}
       </button>

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { ApiError, api } from "@/lib/api";
+import { useCooldown } from "@/lib/cooldown";
 import type { Book, Post } from "@/lib/types";
 import { Button } from "./ui";
 
@@ -40,6 +41,7 @@ export default function PostComposer({ book, currentPage, startOpen = false, emp
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const cooldown = useCooldown();
 
   async function submit() {
     setBusy(true); setError(null);
@@ -57,7 +59,8 @@ export default function PostComposer({ book, currentPage, startOpen = false, emp
       });
       setContent(""); setOpen(false); setDone(true);
     } catch (e) {
-      setError(e instanceof ApiError
+      if (cooldown.take(e)) setError(null);
+      else setError(e instanceof ApiError
         ? e.reasonFor("content") ?? e.reasonFor("pageRangeOrdered") ?? e.reasonFor("fromPage") ?? e.reasonFor("toPage") ?? e.message
         : "감상평을 남기지 못했어요. 잠시 후 다시 시도해 주세요.");
     } finally { setBusy(false); }
@@ -86,6 +89,9 @@ export default function PostComposer({ book, currentPage, startOpen = false, emp
       className="field resize-y"
       aria-label="감상평 본문"
     />
+    {cooldown.locked && <p role="alert" className="mt-2 text-foot text-danger">
+      감상평을 너무 자주 남겼어요. {cooldown.left}초 뒤에 다시 쓸 수 있어요.
+    </p>}
     <p className={`mt-1.5 text-right text-cap tabular-nums ${tooLong ? "text-danger" : "text-faint"}`}>
       {content.length} / {MAX_CONTENT}
     </p>
@@ -116,8 +122,8 @@ export default function PostComposer({ book, currentPage, startOpen = false, emp
       <Button variant="quiet" size="lg" className="flex-1" onClick={() => { setOpen(false); setError(null); }}>
         그만두기
       </Button>
-      <Button size="lg" className="flex-1" disabled={busy || !content.trim() || tooLong} onClick={() => void submit()}>
-        {busy ? "올리는 중…" : "남기기"}
+      <Button size="lg" className="flex-1" disabled={busy || cooldown.locked || !content.trim() || tooLong} onClick={() => void submit()}>
+        {cooldown.locked ? `${cooldown.left}초 뒤에 다시` : busy ? "올리는 중…" : "남기기"}
       </Button>
     </div>
   </div>;

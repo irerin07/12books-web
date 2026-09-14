@@ -10,12 +10,27 @@ export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
   readonly fieldErrors: FieldError[];
+  /**
+   * 429일 때 몇 초 뒤에 다시 오면 되는지. 서버가 Retry-After 헤더로 알려준다.
+   *
+   * 본문이 아니라 헤더인 것은 표준이 그렇기 때문이고, 그래서 여기서 한 번 꺼내 둔다 —
+   * 화면마다 Response를 뒤지게 하면 어딘가는 잊는다.
+   */
+  readonly retryAfter: number;
 
-  constructor(status: number, body: ApiErrorBody | null) {
+  constructor(status: number, body: ApiErrorBody | null, retryAfter?: string | null) {
     super(body?.message ?? "요청을 처리하지 못했습니다.");
     this.status = status;
     this.code = body?.code ?? "UNKNOWN";
     this.fieldErrors = body?.fieldErrors ?? [];
+    /* 헤더가 없거나 이상하면 30초로 본다. 0으로 두면 곧바로 다시 눌러 또 429가 된다. */
+    const seconds = Number(retryAfter);
+    this.retryAfter = Number.isFinite(seconds) && seconds > 0 ? Math.ceil(seconds) : 30;
+  }
+
+  /** 요청이 너무 잦아 서버가 잠시 막은 것. 재시도가 아니라 기다림으로 다뤄야 한다. */
+  get rateLimited() {
+    return this.status === 429;
   }
 
   /** 특정 입력칸에 붙일 메시지. 없으면 null. */
@@ -83,7 +98,11 @@ export async function api<T>(path: string, options: Options = {}): Promise<T> {
   const text = await response.text();
   const payload = text ? JSON.parse(text) : null;
 
-  if (!response.ok) throw new ApiError(response.status, payload);
+  /*
+   * 429는 여기서 되부르지 않는다. 서버가 "잠시 뒤에 오라"고 한 것이라 곧장 다시 부르면
+   * 또 429이고, 남은 시간만 늘어난다. 얼마나 기다릴지는 부른 쪽이 화면에 보여 준다.
+   */
+  if (!response.ok) throw new ApiError(response.status, payload, response.headers.get("Retry-After"));
   return payload as T;
 }
 

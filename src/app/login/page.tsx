@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ApiError } from "@/lib/api";
 import { useSession } from "@/lib/session";
+import { useCooldown } from "@/lib/cooldown";
 import { defaultFeedPath } from "@/lib/feedHome";
 import AuthFrame from "@/components/AuthFrame";
 import { Button, Field, FieldGroup } from "@/components/ui";
@@ -16,6 +17,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const cooldown = useCooldown();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -25,9 +27,14 @@ export default function LoginPage() {
       const who = await login(email, password);
       router.replace(await defaultFeedPath(who.handle));
     } catch (e) {
+      /*
+       * 429는 잠시 잠그고 기다린다. 로그인은 실패만 세므로 여기 닿았다는 것은 비밀번호를
+       * 여러 번 헤맸다는 뜻이고, 맞는 비밀번호로 들어가는 순간 그 한 번은 되돌려진다.
+       */
+      if (cooldown.take(e)) { setError(null); }
       // 서버는 이메일이 틀렸는지 비밀번호가 틀렸는지 구분해 주지 않는다. 그게 맞다 —
       // 구분해 주면 어느 이메일이 가입돼 있는지 알려주는 셈이 된다.
-      setError(e instanceof ApiError ? e.message : "로그인하지 못했습니다.");
+      else setError(e instanceof ApiError ? e.message : "로그인하지 못했습니다.");
     } finally {
       setBusy(false);
     }
@@ -56,12 +63,16 @@ export default function LoginPage() {
             />
           </FieldGroup>
 
-          {error ? (
+          {cooldown.locked ? (
+            <p role="alert" className="mt-3.5 text-center text-callout text-danger">
+              로그인 시도가 너무 잦았어요. {cooldown.left}초 뒤에 다시 시도해 주세요.
+            </p>
+          ) : error ? (
             <p className="mt-3.5 text-center text-callout text-danger">{error}</p>
           ) : null}
 
-          <Button type="submit" size="lg" disabled={busy} className="mt-5 w-full">
-            {busy ? "확인 중…" : "로그인"}
+          <Button type="submit" size="lg" disabled={busy || cooldown.locked} className="mt-5 w-full">
+            {cooldown.locked ? `${cooldown.left}초 뒤에 다시` : busy ? "확인 중…" : "로그인"}
           </Button>
         </form>
 
