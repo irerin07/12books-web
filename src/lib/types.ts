@@ -170,3 +170,19 @@ export type Post = {
    */
   likedByMe: boolean;
 };
+
+/**
+ * 알림 한 건. 백엔드 NotificationResponse와 1:1이다.
+ *
+ * post가 없을 수 있는 경우가 둘이다 — 팔로우 알림에는 딸린 글이 애초에 없고, 글이 지워지면
+ * 알림은 남되 본문이 빠진다. 지운 글의 본문이 알림으로 다시 보이면 안 되기 때문이다.
+ * 그래서 "글로 이동"을 못 그리는 상태가 정상이고, 화면이 그것을 다뤄야 한다.
+ */
+export type AppNotification = {
+  id: number;
+  type: "POST_LIKED" | "POST_COMMENTED" | "FOLLOWED";
+  actor: UserSummary;
+  post?: { id: number; content: string };
+  read: boolean;
+  createdAt: string;
+};
