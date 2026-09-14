@@ -142,6 +142,16 @@ button:not(:disabled),a {cursor:pointer;}
  .post-action:hover {background:var(--color-fill);color:var(--color-ink);}
  .post-action.is-on {color:var(--color-accent);}
  .post-action:disabled {cursor:wait;opacity:.6;}
+ /* 지우기를 되묻는 줄. 카드 안에서 끝내고 화면을 덮지 않는다 — 한 글에 관한 일이다. */
+ .post-confirm {margin-top:12px;padding:14px;border:1px solid var(--color-line);border-radius:8px;background:var(--color-fill);}
+ .post-confirm>p {font-size:13px;color:var(--color-muted);line-height:1.6;}
+ .post-confirm-actions {display:flex;justify-content:flex-end;gap:8px;margin-top:12px;}
+ .post-confirm-keep, .post-confirm-remove {min-height:36px;padding:0 14px;border-radius:8px;font-size:13px;font-weight:600;}
+ .post-confirm-keep {color:var(--color-ink);background:white;border:1px solid var(--color-line);}
+ .post-confirm-keep:hover {background:var(--color-fill-strong);}
+ .post-confirm-remove {color:white;background:var(--color-danger);}
+ .post-confirm-remove:hover {opacity:.9;}
+ .post-confirm-keep:disabled, .post-confirm-remove:disabled {cursor:wait;opacity:.6;}
  .post-comments {margin-top:16px;padding-top:16px;border-top:1px solid var(--color-line);}
  .comment-row {display:flex;gap:10px;}
  .comment-row .avatar {width:30px;height:30px;font-size:12px;}

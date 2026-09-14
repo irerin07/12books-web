@@ -113,7 +113,8 @@ export default function Feed({ path, empty }: { path: string; empty: React.React
       following={relationships[post.author.handle] ?? knownRelation}
       followBusy={pending[post.author.handle] ?? false}
       followError={followErrors[post.author.handle]}
-      onFollow={() => void follow(post.author.handle)} />)}</div>
+      onFollow={() => void follow(post.author.handle)}
+      onRemoved={id => setPosts(prev => prev?.filter(p => p.id !== id) ?? prev)} />)}</div>
     {hasNext && <div ref={sentinel} className="pt-4">
       {moreError
         ? <div className="py-8 text-center">

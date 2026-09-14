@@ -18,12 +18,14 @@ function since(iso: string) {
   return written.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" });
 }
 
-export default function PostCard({ post, following, followBusy = false, followError, onFollow }: {
+export default function PostCard({ post, following, followBusy = false, followError, onFollow, onRemoved }: {
   post: Post;
   following?: boolean;
   followBusy?: boolean;
   followError?: string;
   onFollow?: () => void;
+  /** 지워진 뒤 목록에서 내리라고 알린다. 서버는 204만 주므로 화면이 직접 내린다. */
+  onRemoved?: (id: number) => void;
 }) {
   const { me } = useSession();
   const [revealed, setRevealed] = useState(false);
@@ -37,6 +39,15 @@ export default function PostCard({ post, following, followBusy = false, followEr
   const [commentCount, setCommentCount] = useState(post.commentCount);
   const [showComments, setShowComments] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  /*
+   * 지우기는 두 걸음이다. 한 번 누르면 정말 지울지 그 자리에서 되묻는다.
+   *
+   * API에 복구 경로가 없다 — 지운 글은 단건도 목록도 P001/404이고 달려 있던 좋아요·댓글에도
+   * 닿을 수 없다. 되돌릴 수 없는 것을 한 번의 실수로 지나가게 두지 않는다.
+   */
+  const [confirming, setConfirming] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState<string | null>(null);
   const contentId = useId();
   const pages = post.fromPage !== undefined
     ? `${post.fromPage}${post.toPage !== undefined && post.toPage !== post.fromPage ? `–${post.toPage}` : ""}쪽`
@@ -60,6 +71,19 @@ export default function PostCard({ post, following, followBusy = false, followEr
       }
     } finally { setLikeBusy(false); }
   }
+  async function remove() {
+    setRemoving(true); setRemoveError(null);
+    try {
+      await api<void>(`/api/v1/posts/${post.id}`, { method: "DELETE" });
+      onRemoved?.(post.id);
+    } catch (e) {
+      /* 이미 지워진 글이면 원하던 결과에 이미 도달해 있다. 목록에서 내리는 것이 맞다. */
+      if (e instanceof ApiError && e.code === "P001") onRemoved?.(post.id);
+      else { setRemoveError("감상평을 지우지 못했어요. 잠시 후 다시 시도해 주세요."); setRemoving(false); }
+    }
+  }
+
+  const mine = me?.handle === post.author.handle;
   const long = post.content.length > 320 || post.content.split("\n").length > 7;
 
   return <article className="post-card" aria-label={`${post.author.displayName}님의 ${post.book.title} 감상`}>
@@ -116,7 +140,25 @@ export default function PostCard({ post, following, followBusy = false, followEr
         <Icon name="comment" className="h-[18px] w-[18px]" />
         {commentCount > 0 && <span className="tabular-nums">{commentCount}</span>}
       </button>
+      {/*
+        내 글에만 보인다. 좋아요·댓글과 나란히 두되 반대쪽 끝으로 민다 — 읽다가 누르는 것과
+        내 글을 다루는 것은 다른 일이라 손이 같은 자리에서 움직이지 않게 한다.
+      */}
+      {mine && !confirming && <button onClick={() => setConfirming(true)}
+        className="post-action ml-auto">지우기</button>}
     </footer>
+
+    {mine && confirming && <div className="post-confirm" role="group" aria-label="감상평 지우기">
+      {/* 무엇이 남고 무엇이 사라지는지 먼저 말한다. 진도와 별점은 서재에 그대로 있다. */}
+      <p>이 감상평과 달린 좋아요·댓글이 사라져요. 되돌릴 수 없어요.</p>
+      <div className="post-confirm-actions">
+        <button onClick={() => setConfirming(false)} disabled={removing} className="post-confirm-keep">그대로 두기</button>
+        <button onClick={() => void remove()} disabled={removing} className="post-confirm-remove">
+          {removing ? "지우는 중…" : "지우기"}
+        </button>
+      </div>
+    </div>}
+    {removeError && <p role="alert" className="mt-2 text-foot text-danger">{removeError}</p>}
 
     {showComments && <PostComments postId={post.id} postAuthor={post.author.handle}
       onCountChange={delta => setCommentCount(count => Math.max(0, count + delta))} />}
