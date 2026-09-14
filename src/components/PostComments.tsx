@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ApiError, api } from "@/lib/api";
+import { useCooldown } from "@/lib/cooldown";
 import { useSession } from "@/lib/session";
 import type { Comment, CursorPage } from "@/lib/types";
 import { Button } from "./ui";
@@ -30,6 +31,7 @@ export default function PostComments({ postId, postAuthor, onCountChange }: {
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const cooldown = useCooldown();
 
   useEffect(() => {
     let active = true;
@@ -57,7 +59,8 @@ export default function PostComments({ postId, postAuthor, onCountChange }: {
       setItems(prev => [created, ...(prev ?? [])]);
       setDraft(""); onCountChange(1);
     } catch (e) {
-      setError(e instanceof ApiError && e.code === "P001"
+      if (cooldown.take(e)) setError(null);
+      else setError(e instanceof ApiError && e.code === "P001"
         ? "지워진 감상평이에요."
         : e instanceof ApiError ? e.reasonFor("content") ?? e.message : "댓글을 남기지 못했어요.");
     } finally { setBusy(false); }
@@ -83,12 +86,15 @@ export default function PostComments({ postId, postAuthor, onCountChange }: {
         placeholder="이 감상에 한마디" aria-label="댓글 쓰기" className="field resize-y" />
       <div className="mt-2 flex items-center justify-end gap-3">
         <span className="text-cap tabular-nums text-faint">{draft.length} / {MAX}</span>
-        <Button variant="quiet" disabled={busy || !draft.trim()} onClick={() => void write()}>
-          {busy ? "남기는 중" : "남기기"}
+        <Button variant="quiet" disabled={busy || cooldown.locked || !draft.trim()} onClick={() => void write()}>
+          {cooldown.locked ? `${cooldown.left}초 뒤에 다시` : busy ? "남기는 중" : "남기기"}
         </Button>
       </div>
     </div>}
 
+    {cooldown.locked && <p role="alert" className="mt-3 text-foot text-danger">
+      댓글을 너무 자주 남겼어요. {cooldown.left}초 뒤에 다시 쓸 수 있어요.
+    </p>}
     {error && <p role="alert" className="mt-3 text-foot text-danger">{error}</p>}
 
     {items === null ? <p className="mt-4 text-foot text-muted">불러오는 중</p>

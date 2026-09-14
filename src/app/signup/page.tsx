@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ApiError, api } from "@/lib/api";
+import { useCooldown } from "@/lib/cooldown";
 import { useSession } from "@/lib/session";
 import AuthFrame from "@/components/AuthFrame";
 import { Button, Field, FieldGroup } from "@/components/ui";
@@ -18,6 +19,7 @@ export default function SignupPage() {
     displayName: "",
   });
   const [error, setError] = useState<ApiError | null>(null);
+  const cooldown = useCooldown();
   const [busy, setBusy] = useState(false);
 
   const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -33,7 +35,8 @@ export default function SignupPage() {
       await login(form.email, form.password);
       router.push("/");
     } catch (e) {
-      setError(e instanceof ApiError ? e : null);
+      if (cooldown.take(e)) setError(null);
+      else setError(e instanceof ApiError ? e : null);
     } finally {
       setBusy(false);
     }
@@ -68,12 +71,16 @@ export default function SignupPage() {
               error={error?.reasonFor("displayName")} required />
           </FieldGroup>
 
-          {error && error.fieldErrors.length === 0 ? (
+          {cooldown.locked ? (
+            <p role="alert" className="mt-3.5 text-center text-callout text-danger">
+              가입 시도가 너무 잦았어요. {cooldown.left}초 뒤에 다시 시도해 주세요.
+            </p>
+          ) : error && error.fieldErrors.length === 0 ? (
             <p className="mt-3.5 text-center text-callout text-danger">{error.message}</p>
           ) : null}
 
-          <Button type="submit" size="lg" disabled={busy} className="mt-5 w-full">
-            {busy ? "만드는 중…" : "가입하기"}
+          <Button type="submit" size="lg" disabled={busy || cooldown.locked} className="mt-5 w-full">
+            {cooldown.locked ? `${cooldown.left}초 뒤에 다시` : busy ? "만드는 중…" : "가입하기"}
           </Button>
         </form>
 

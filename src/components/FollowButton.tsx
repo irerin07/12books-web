@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { ApiError, api } from "@/lib/api";
+import { useCooldown } from "@/lib/cooldown";
 import { Button } from "./ui";
 
 /**
@@ -23,6 +24,7 @@ export default function FollowButton({
 }) {
   const [busy, setBusy] = useState(false);
   const [hovering, setHovering] = useState(false);
+  const cooldown = useCooldown();
 
   async function toggle() {
     const next = !following;
@@ -32,7 +34,9 @@ export default function FollowButton({
       await api<void>(`/api/v1/users/${handle}/follow`, { method: next ? "POST" : "DELETE" });
     } catch (e) {
       if (e instanceof ApiError && e.code === "F002") return;
+      /* 429면 눌린 결과를 되돌린다 — 서버는 받지 않았다. 그 뒤 잠시 못 누르게 잠근다. */
       onChanged(!next);
+      cooldown.take(e);
     } finally {
       setBusy(false);
     }
@@ -40,12 +44,12 @@ export default function FollowButton({
 
   return <Button
     variant={following ? "quiet" : "primary"}
-    disabled={busy}
+    disabled={busy || cooldown.locked}
     onClick={() => void toggle()}
     onMouseEnter={() => setHovering(true)}
     onMouseLeave={() => setHovering(false)}
     className="min-w-[92px]"
   >
-    {following ? (hovering ? "언팔로우" : "팔로잉") : "팔로우"}
+    {cooldown.locked ? `${cooldown.left}초 뒤` : following ? (hovering ? "언팔로우" : "팔로잉") : "팔로우"}
   </Button>;
 }
