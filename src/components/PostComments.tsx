@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ApiError, api } from "@/lib/api";
 import { useCooldown } from "@/lib/cooldown";
+import ReportSheet from "./ReportSheet";
 import { useSession } from "@/lib/session";
 import type { Comment, CursorPage } from "@/lib/types";
 import { Button } from "./ui";
@@ -32,6 +33,8 @@ export default function PostComments({ postId, postAuthor, onCountChange }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const cooldown = useCooldown();
+  /** 신고 중인 댓글 id. 한 번에 하나만 연다. */
+  const [reporting, setReporting] = useState<number | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -81,6 +84,8 @@ export default function PostComments({ postId, postAuthor, onCountChange }: {
   }
 
   return <section className="post-comments" aria-label="댓글">
+    {reporting !== null && <ReportSheet target={`/api/v1/comments/${reporting}/reports`} what="댓글"
+      onClose={() => setReporting(null)} />}
     {me && <div className="comment-write">
       <textarea value={draft} onChange={e => setDraft(e.target.value)} rows={2} maxLength={MAX}
         placeholder="이 감상에 한마디" aria-label="댓글 쓰기" className="field resize-y" />
@@ -113,6 +118,9 @@ export default function PostComments({ postId, postAuthor, onCountChange }: {
           {/* 내 댓글이거나 내 글에 달린 댓글이면 지울 수 있다. */}
           {me && (me.handle === comment.author.handle || me.handle === postAuthor) &&
             <button onClick={() => void remove(comment.id)} className="shrink-0 self-start text-cap text-muted hover:text-danger">지우기</button>}
+          {/* 내가 지울 수 없는 남의 댓글에는 신고를 둔다. 내 댓글 신고는 서버가 S003으로 막는다. */}
+          {me && me.handle !== comment.author.handle && me.handle !== postAuthor &&
+            <button onClick={() => setReporting(comment.id)} className="shrink-0 self-start text-cap text-muted hover:text-danger">신고</button>}
         </li>)}</ul>}
 
     {hasNext && <div className="mt-4 text-center">
