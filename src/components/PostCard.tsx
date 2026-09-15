@@ -8,6 +8,7 @@ import Icon from "./Icon";
 import { useSession } from "@/lib/session";
 import PostComments from "./PostComments";
 import { useCooldown } from "@/lib/cooldown";
+import ReportSheet from "./ReportSheet";
 
 function since(iso: string) {
   const written = new Date(iso);
@@ -50,6 +51,7 @@ export default function PostCard({ post, following, followBusy = false, followEr
   const [confirming, setConfirming] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [removeError, setRemoveError] = useState<string | null>(null);
+  const [reporting, setReporting] = useState(false);
   const contentId = useId();
   const pages = post.fromPage !== undefined
     ? `${post.fromPage}${post.toPage !== undefined && post.toPage !== post.fromPage ? `–${post.toPage}` : ""}쪽`
@@ -152,7 +154,15 @@ export default function PostCard({ post, following, followBusy = false, followEr
       */}
       {mine && !confirming && <button onClick={() => setConfirming(true)}
         className="post-action ml-auto">지우기</button>}
+      {/*
+        내 글에는 신고가 없다 — 서버가 S003/400으로 막는 것을 버튼으로 먼저 말한다.
+        로그인하지 않았으면 애초에 보낼 수 없다.
+      */}
+      {me && !mine && <button onClick={() => setReporting(true)} className="post-action ml-auto">신고</button>}
     </footer>
+
+    {reporting && <ReportSheet target={`/api/v1/posts/${post.id}/reports`} what="감상평"
+      onClose={() => setReporting(false)} />}
 
     {mine && confirming && <div className="post-confirm" role="group" aria-label="감상평 지우기">
       {/* 무엇이 남고 무엇이 사라지는지 먼저 말한다. 진도와 별점은 서재에 그대로 있다. */}
