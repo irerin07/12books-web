@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { ApiError } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import { useCooldown } from "@/lib/cooldown";
@@ -10,9 +10,16 @@ import { defaultFeedPath } from "@/lib/feedHome";
 import AuthFrame from "@/components/AuthFrame";
 import { Button, Field, FieldGroup } from "@/components/ui";
 
+/* useSearchParams를 쓰는 부분은 Suspense 안에 있어야 한다 — 빌드 때 이 화면을 미리 그린다. */
 export default function LoginPage() {
+  return <Suspense fallback={null}><LoginForm /></Suspense>;
+}
+
+function LoginForm() {
   const router = useRouter();
   const { login } = useSession();
+  /* 재설정을 막 끝내고 온 사람. 모든 기기가 로그아웃된 참이라 왜 다시 묻는지 말해 준다. */
+  const justReset = useSearchParams().get("reset") === "1";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +48,10 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthFrame><h1 className="text-title">로그인</h1><p className="mt-2 mb-7 text-callout text-muted">내 서재에서 읽던 책을 이어가세요.</p>
+    <AuthFrame><h1 className="text-title">로그인</h1>
+        <p className="mt-2 mb-7 text-callout text-muted">
+          {justReset ? "비밀번호를 바꿨어요. 새 비밀번호로 다시 로그인해 주세요." : "내 서재에서 읽던 책을 이어가세요."}
+        </p>
         <form onSubmit={submit}>
           <FieldGroup>
             <Field
@@ -76,7 +86,11 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <p className="mt-8 text-center text-callout text-muted">
+        <p className="mt-5 text-center text-callout">
+          <Link href="/forgot-password" className="text-muted hover:text-accent">비밀번호를 잊으셨나요?</Link>
+        </p>
+
+        <p className="mt-6 text-center text-callout text-muted">
           계정이 없나요?{" "}
           <Link href="/signup" className="font-medium text-accent hover:opacity-65">
             가입하기
